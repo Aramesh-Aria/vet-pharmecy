@@ -5,6 +5,9 @@ django-environ==0.12.0
 whitenoise==6.8.2
 gunicorn==23.0.0
 
+# Image handling (ImageField for category tiles, animal photos)
+Pillow==11.1.0
+
 # Farsi / Jalali calendar (ADR-0002)
 jdatetime==5.0.0
 django-jalali==7.3.0

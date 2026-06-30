@@ -48,6 +48,9 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "accounts",
     "core",
+    "notifications",
+    "catalog",
+    "animals",
     "payments",
     "pages",
 ]
@@ -161,3 +164,14 @@ PAYMENTS_BACKEND = env(
 # Console backends at this phase; real email/SMS wired in Phase 2.
 # --------------------------------------------------------------------------
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.ir")
+
+# SMS gateway — Iran-reachable only, never Twilio (ADR-0003). Console in dev.
+SMS_BACKEND = env(
+    "SMS_BACKEND",
+    default="notifications.backends.console.ConsoleSMSBackend",
+)
+
+# One-time password (phone verification / reset) policy.
+OTP_TTL_SECONDS = env.int("OTP_TTL_SECONDS", default=120)
+OTP_MAX_ATTEMPTS = env.int("OTP_MAX_ATTEMPTS", default=5)

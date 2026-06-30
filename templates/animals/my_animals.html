@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}حیوانات من{% endblock %}
+{% block content %}
+  <h1>حیوانات من</h1>
+
+  <section>
+    <h2>حیوانات</h2>
+    <p><a href="{% url 'animals:create' %}">+ افزودن حیوان</a></p>
+    {% if animals %}
+      <ul>
+        {% for animal in animals %}
+          <li>
+            <a href="{{ animal.get_absolute_url }}">{{ animal.name }}</a>
+            — {{ animal.species }} ({{ animal.animal_category }})
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>هنوز حیوانی ثبت نکرده‌اید.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>گله‌ها (دام)</h2>
+    <p><a href="{% url 'animals:herd_create' %}">+ افزودن گله</a></p>
+    {% if herds %}
+      <ul>
+        {% for herd in herds %}
+          <li><a href="{{ herd.get_absolute_url }}">{{ herd }}</a></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>هنوز گله‌ای ثبت نکرده‌اید.</p>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -40,13 +40,15 @@ WhiteNoise serves static files from the app, so no separate web server is needed
 
 ## Apps (current)
 
-| App        | Responsibility                                              |
-|------------|-------------------------------------------------------------|
-| `config`   | Split settings (base/dev/prod), URLs, WSGI/ASGI             |
-| `accounts` | Custom User (phone identity, ADR-0004), OwnerProfile, auth  |
-| `core`     | Base templates, Jalali/Persian template filters             |
-| `payments` | Payment model + backend interface; pay-at-pickup (ADR-0005) |
-| `pages`    | Public pages (home)                                         |
+| App             | Responsibility                                                        |
+|-----------------|-----------------------------------------------------------------------|
+| `config`        | Split settings (base/dev/prod), URLs, WSGI/ASGI                       |
+| `accounts`      | Custom User (phone identity, ADR-0004), OwnerProfile, OTP auth        |
+| `core`          | Base templates, Jalali/Persian template filters                      |
+| `notifications` | `notify()` + pluggable SMS/email backends; OTP delivery (ADR-0003)   |
+| `catalog`       | AnimalCategory + Section taxonomy, category landing pages (ADR-0006)  |
+| `animals`       | Animal + Herd models, Owner-scoped CRUD                              |
+| `payments`      | Payment model + backend interface; pay-at-pickup (ADR-0005)          |
+| `pages`         | Public home with category tiles                                      |
 
-Apps for animals, catalog, appointments, records, pharmacy, and notifications
-arrive in Phases 1–3 (see PLAN.md §8).
+Apps for appointments, records, and pharmacy arrive in Phases 2–3 (see PLAN.md §8).

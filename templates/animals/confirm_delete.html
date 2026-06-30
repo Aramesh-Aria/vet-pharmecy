@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}حذف{% endblock %}
+{% block content %}
+  <h1>حذف</h1>
+  <p>آیا از حذف «{{ object }}» مطمئن هستید؟</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">بله، حذف کن</button>
+    <a href="{% url 'animals:list' %}">انصراف</a>
+  </form>
+{% endblock %}

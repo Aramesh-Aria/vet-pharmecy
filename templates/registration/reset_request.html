@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}بازیابی گذرواژه{% endblock %}
+{% block content %}
+  <h1>بازیابی گذرواژه</h1>
+  <p>شماره موبایل خود را وارد کنید تا کد بازیابی برایتان ارسال شود.</p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <p>
+      <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label><br>
+      {{ form.phone }}
+      {{ form.phone.errors }}
+    </p>
+    <button type="submit">ارسال کد</button>
+  </form>
+  <p><a href="{% url 'accounts:login' %}">بازگشت به ورود</a></p>
+{% endblock %}

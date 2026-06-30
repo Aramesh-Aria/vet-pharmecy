@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load persian %}
+{% block title %}{{ herd }}{% endblock %}
+{% block content %}
+  <p><a href="{% url 'animals:list' %}">→ بازگشت به حیوانات من</a></p>
+  <h1>{{ herd }}</h1>
+  <ul>
+    <li>دسته: {{ herd.animal_category }}</li>
+    <li>گونه: {{ herd.species }}</li>
+    <li>تعداد رأس: {{ herd.head_count|fa_digits }}</li>
+    {% if herd.farm_location %}<li>موقعیت دامداری: {{ herd.farm_location }}</li>{% endif %}
+  </ul>
+  <p>
+    <a href="{% url 'animals:herd_update' herd.pk %}">ویرایش</a> ·
+    <a href="{% url 'animals:herd_delete' herd.pk %}">حذف</a>
+  </p>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load persian %}
+{% block title %}{{ animal.name }}{% endblock %}
+{% block content %}
+  <p><a href="{% url 'animals:list' %}">→ بازگشت به حیوانات من</a></p>
+  <h1>{{ animal.name }}</h1>
+  {% if animal.photo %}<img src="{{ animal.photo.url }}" alt="{{ animal.name }}" style="max-width:240px">{% endif %}
+  <ul>
+    <li>دسته: {{ animal.animal_category }}</li>
+    <li>گونه: {{ animal.species }}</li>
+    <li>جنسیت: {{ animal.get_sex_display }}</li>
+    {% if animal.birth_date %}<li>تاریخ تولد: {{ animal.birth_date|jalali }}</li>{% endif %}
+    {% if animal.weight_kg %}<li>وزن: {{ animal.weight_kg|fa_digits }} کیلوگرم</li>{% endif %}
+  </ul>
+  <p>
+    <a href="{% url 'animals:update' animal.pk %}">ویرایش</a> ·
+    <a href="{% url 'animals:delete' animal.pk %}">حذف</a>
+  </p>
+{% endblock %}

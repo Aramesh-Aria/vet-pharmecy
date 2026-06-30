@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }} — {{ section_label }}{% endblock %}
+{% block content %}
+  <p><a href="{% url 'catalog:category' category.slug %}">→ {{ category.name }}</a></p>
+  <h1>{{ category.name }} — {{ section_label }}</h1>
+
+  {# Section contents are added in later phases: #}
+  {# Medication/Equipment -> Products + cart (Phase 2); Service -> Appointment #}
+  {# (Phase 3); Online Visit -> paid booking (Phase 5). #}
+  <p>محتوای این بخش به‌زودی اضافه می‌شود.</p>
+{% endblock %}

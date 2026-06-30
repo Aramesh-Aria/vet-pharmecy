@@ -64,6 +64,41 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.role == self.Role.STAFF
 
 
+class PhoneOTP(models.Model):
+    """A one-time code sent over SMS for phone verification or password reset
+    (ADR-0004). Codes are stored hashed; validity is bounded by a short TTL and
+    a max-attempts cap (both configurable via settings)."""
+
+    class Purpose(models.TextChoices):
+        REGISTER = "register", _("تأیید ثبت‌نام")
+        RESET = "reset", _("بازیابی گذرواژه")
+
+    phone = models.CharField(_("شماره موبایل"), max_length=11, db_index=True)
+    code_hash = models.CharField(max_length=128)
+    purpose = models.CharField(max_length=10, choices=Purpose.choices)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    consumed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = _("کد یک‌بارمصرف")
+        verbose_name_plural = _("کدهای یک‌بارمصرف")
+        indexes = [models.Index(fields=["phone", "purpose"])]
+
+    def __str__(self):
+        return f"OTP {self.phone} ({self.get_purpose_display()})"
+
+    def is_usable(self) -> bool:
+        from django.conf import settings
+
+        return (
+            self.consumed_at is None
+            and self.attempts < settings.OTP_MAX_ATTEMPTS
+            and timezone.now() < self.expires_at
+        )
+
+
 class OwnerProfile(models.Model):
     """Owner-specific data: contact, address, and notification preferences."""
 

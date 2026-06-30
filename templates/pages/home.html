@@ -2,9 +2,23 @@
 {% block title %}خانه{% endblock %}
 {% block content %}
   <h1>دامپزشکی و داروخانه</h1>
-  <p>
-    به وب‌سایت کلینیک و داروخانه دامپزشکی خوش آمدید. صفحهٔ اصلی با کاشی‌های
-    دسته‌بندی حیوانات در فاز بعدی ساخته می‌شود.
-  </p>
-  {# Home category tiles + full IA arrive in Phase 1 / claude-design. #}
+  <p>برای شروع، دستهٔ حیوان مورد نظر خود را انتخاب کنید.</p>
+
+  {# Category tiles (ADR-0006). Visual design comes later via claude-design. #}
+  <ul class="category-tiles">
+    {% for category in categories %}
+      <li>
+        <a href="{{ category.get_absolute_url }}">
+          {% if category.image %}<img src="{{ category.image.url }}" alt="{{ category.name }}" style="max-width:160px">{% endif %}
+          <span>{{ category.name }}</span>
+        </a>
+      </li>
+    {% empty %}
+      <li>هنوز دسته‌ای تعریف نشده است.</li>
+    {% endfor %}
+  </ul>
+
+  {% if user.is_authenticated %}
+    <p><a href="{% url 'animals:list' %}">حیوانات من</a></p>
+  {% endif %}
 {% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{% if form.instance.pk %}ویرایش گله{% else %}افزودن گله{% endif %}{% endblock %}
+{% block content %}
+  <h1>{% if form.instance.pk %}ویرایش گله{% else %}افزودن گله{% endif %}</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">ذخیره</button>
+    <a href="{% url 'animals:list' %}">انصراف</a>
+  </form>
+{% endblock %}

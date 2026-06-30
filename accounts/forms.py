@@ -1,5 +1,6 @@
 """Auth forms keyed on phone (ADR-0004)."""
 from django import forms
+from django.contrib.auth import password_validation
 from django.contrib.auth.forms import (
     AuthenticationForm,
     UserChangeForm,
@@ -32,3 +33,71 @@ class UserAdminChangeForm(UserChangeForm):
     class Meta(UserChangeForm.Meta):
         model = User
         fields = "__all__"
+
+
+class _PhoneField(forms.CharField):
+    def clean(self, value):
+        return normalize_phone(super().clean(value))
+
+
+class _PasswordPairMixin:
+    """Validate that two password fields match and pass Django's validators."""
+
+    def clean_password2(self):
+        p1 = self.cleaned_data.get("password1")
+        p2 = self.cleaned_data.get("password2")
+        if p1 and p2 and p1 != p2:
+            raise forms.ValidationError("گذرواژه‌ها یکسان نیستند.")
+        password_validation.validate_password(p2)
+        return p2
+
+
+class RegistrationForm(_PasswordPairMixin, forms.Form):
+    """Collect registration details. The account is created only after the
+    phone is verified by OTP (see the register/verify views)."""
+
+    phone = _PhoneField(label="شماره موبایل", max_length=15)
+    full_name = forms.CharField(label="نام و نام خانوادگی", max_length=150)
+    password1 = forms.CharField(label="گذرواژه", widget=forms.PasswordInput)
+    password2 = forms.CharField(label="تکرار گذرواژه", widget=forms.PasswordInput)
+
+    def clean_phone(self):
+        phone = self.cleaned_data["phone"]
+        if User.objects.filter(phone=phone).exists():
+            raise forms.ValidationError("این شماره قبلاً ثبت شده است.")
+        return phone
+
+
+def _ascii_code(value: str) -> str:
+    """Strip spaces and convert Persian/Arabic digits to ASCII."""
+    digit_map = {ord(p): str(i) for i, p in enumerate("۰۱۲۳۴۵۶۷۸۹")}
+    digit_map.update({ord(a): str(i) for i, a in enumerate("٠١٢٣٤٥٦٧٨٩")})
+    return value.strip().translate(digit_map)
+
+
+class OTPVerifyForm(forms.Form):
+    code = forms.CharField(
+        label="کد تأیید",
+        max_length=6,
+        widget=forms.TextInput(attrs={"inputmode": "numeric", "autofocus": True}),
+    )
+
+    def clean_code(self):
+        return _ascii_code(self.cleaned_data["code"])
+
+
+class PasswordResetRequestForm(forms.Form):
+    phone = _PhoneField(label="شماره موبایل", max_length=15)
+
+
+class SetNewPasswordForm(_PasswordPairMixin, forms.Form):
+    code = forms.CharField(
+        label="کد تأیید",
+        max_length=6,
+        widget=forms.TextInput(attrs={"inputmode": "numeric"}),
+    )
+    password1 = forms.CharField(label="گذرواژهٔ جدید", widget=forms.PasswordInput)
+    password2 = forms.CharField(label="تکرار گذرواژهٔ جدید", widget=forms.PasswordInput)
+
+    def clean_code(self):
+        return _ascii_code(self.cleaned_data["code"])

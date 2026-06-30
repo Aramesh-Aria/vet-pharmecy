@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from .forms import UserAdminChangeForm, UserAdminCreationForm
-from .models import OwnerProfile, User
+from .models import OwnerProfile, PhoneOTP, User
 
 
 class OwnerProfileInline(admin.StackedInline):
@@ -53,3 +53,12 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
     )
+
+
+@admin.register(PhoneOTP)
+class PhoneOTPAdmin(admin.ModelAdmin):
+    list_display = ("phone", "purpose", "attempts", "created_at", "expires_at", "consumed_at")
+    list_filter = ("purpose",)
+    search_fields = ("phone",)
+    readonly_fields = ("phone", "code_hash", "purpose", "attempts", "created_at",
+                       "expires_at", "consumed_at")
