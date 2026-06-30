@@ -1,0 +1,59 @@
+{% load i18n static %}
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}دامپزشکی و داروخانه{% endblock %}</title>
+  {# Minimal placeholder styling. Full frontend is designed later (claude-design). #}
+  <style>
+    :root { color-scheme: light; }
+    body {
+      font-family: Vazirmatn, Tahoma, sans-serif;
+      margin: 0;
+      line-height: 1.7;
+      background: #fafafa;
+      color: #1a1a1a;
+    }
+    header, main, footer { padding-inline: 1rem; max-width: 70rem; margin-inline: auto; }
+    header { display: flex; gap: 1rem; align-items: center; padding-block: 1rem; border-bottom: 1px solid #e5e5e5; }
+    header nav { margin-inline-start: auto; display: flex; gap: 1rem; }
+    main { padding-block: 2rem; min-height: 60vh; }
+    footer { border-top: 1px solid #e5e5e5; padding-block: 1.5rem; color: #666; font-size: .9rem; }
+    .messages { list-style: none; padding: 0; }
+    .messages li { padding: .6rem 1rem; border-radius: .4rem; margin-block-end: .5rem; background: #eef; }
+    a { color: #1565c0; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header>
+    <a href="{% url 'pages:home' %}"><strong>دامپزشکی و داروخانه</strong></a>
+    <nav>
+      {% if user.is_authenticated %}
+        <span>{{ user }}</span>
+        <form action="{% url 'accounts:logout' %}" method="post" style="display:inline">
+          {% csrf_token %}
+          <button type="submit">خروج</button>
+        </form>
+      {% else %}
+        <a href="{% url 'accounts:login' %}">ورود</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main>
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    {% block footer %}© دامپزشکی و داروخانه{% endblock %}
+  </footer>
+  {% block extra_body %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}ورود{% endblock %}
+{% block content %}
+  <h1>ورود</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <p>
+      <label for="{{ form.username.id_for_label }}">شماره موبایل</label><br>
+      {{ form.username }}
+      {{ form.username.errors }}
+    </p>
+    <p>
+      <label for="{{ form.password.id_for_label }}">گذرواژه</label><br>
+      {{ form.password }}
+      {{ form.password.errors }}
+    </p>
+    <button type="submit">ورود</button>
+  </form>
+{% endblock %}
