@@ -31,7 +31,8 @@ ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 # Applications
 # --------------------------------------------------------------------------
 DJANGO_APPS = [
-    "django.contrib.admin",
+    # Custom admin config swaps in our dashboard-equipped AdminSite.
+    "core.admin_apps.VetAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -155,12 +156,29 @@ LOGIN_REDIRECT_URL = "pages:home"
 LOGOUT_REDIRECT_URL = "pages:home"
 
 # --------------------------------------------------------------------------
-# Payments — pay-at-pickup backend at launch; real gateway later (ADR-0005).
+# Payments (ADR-0005). Pay-at-pickup at launch; online gateway arrives in
+# Phase 5 (post-e-Namad). The online flow is built but gated by a flag — when
+# PAYMENTS_ONLINE_ENABLED is True, checkout uses the online backend and redirects
+# to the gateway; otherwise it stays pay-at-pickup. (Flag, not commented code.)
 # --------------------------------------------------------------------------
+PAYMENTS_ONLINE_ENABLED = env.bool("PAYMENTS_ONLINE_ENABLED", default=False)
+
+# Backend used when online is OFF (launch default) and when it is ON.
 PAYMENTS_BACKEND = env(
     "PAYMENTS_BACKEND",
     default="payments.backends.manual.ManualPickupBackend",
 )
+PAYMENTS_ONLINE_BACKEND = env(
+    "PAYMENTS_ONLINE_BACKEND",
+    default="payments.backends.zarinpal.ZarinpalBackend",
+)
+
+# Absolute base URL used to build the gateway callback (set per environment).
+SITE_BASE_URL = env("SITE_BASE_URL", default="http://localhost:8000")
+
+# Zarinpal gateway (Phase 5). Sandbox until a real merchant id is contracted.
+ZARINPAL_MERCHANT_ID = env("ZARINPAL_MERCHANT_ID", default="")
+ZARINPAL_SANDBOX = env.bool("ZARINPAL_SANDBOX", default=True)
 
 # --------------------------------------------------------------------------
 # Notifications — single layer, pluggable backends (ADR-0003).

@@ -64,11 +64,20 @@ def cart_remove(request, product_id):
 @login_required
 @require_POST
 def checkout(request):
+    from payments.services import gateway_redirect_url
+
     try:
         order = services.place_order(request.user)
     except ValidationError as exc:
         messages.error(request, exc.messages[0])
         return redirect("pharmacy:cart")
+
+    # When online payment is enabled, send the Owner to the gateway; otherwise
+    # the order is settled at pickup (no redirect).
+    redirect_url = gateway_redirect_url(order)
+    if redirect_url:
+        return redirect(redirect_url)
+
     messages.success(request, "سفارش شما ثبت شد. پرداخت هنگام تحویل در داروخانه.")
     return redirect(order.get_absolute_url())
 

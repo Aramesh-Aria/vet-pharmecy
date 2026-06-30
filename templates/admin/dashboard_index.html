@@ -1,0 +1,21 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+  {% if dashboard %}
+    <div class="module" style="margin-block-end:1.5rem">
+      <h2>{% trans "کارهای در انتظار" %}</h2>
+      <ul style="list-style:none;margin:0;padding:.5rem 1rem;display:flex;flex-wrap:wrap;gap:1rem">
+        {% for card in dashboard %}
+          <li style="min-width:14rem;border:1px solid var(--hairline-color,#e5e5e5);border-radius:.5rem;padding:1rem">
+            <a href="{{ card.url }}" style="text-decoration:none">
+              <div style="font-size:2rem;font-weight:700">{{ card.count }}</div>
+              <div>{{ card.label }}</div>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}

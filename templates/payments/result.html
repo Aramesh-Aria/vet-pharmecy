@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load persian %}
+{% block title %}نتیجهٔ پرداخت{% endblock %}
+{% block content %}
+  {% if ok %}
+    <h1>پرداخت موفق</h1>
+    <p>پرداخت شما با موفقیت انجام شد.</p>
+    {% if payment.ref_id %}<p>کد پیگیری: {{ payment.ref_id|fa_digits }}</p>{% endif %}
+  {% else %}
+    <h1>پرداخت ناموفق</h1>
+    <p>پرداخت انجام نشد یا لغو شد. در صورت کسر وجه، مبلغ طبق قوانین درگاه بازمی‌گردد.</p>
+  {% endif %}
+
+  {% if payable.get_absolute_url %}
+    <p><a href="{{ payable.get_absolute_url }}">مشاهدهٔ جزئیات</a></p>
+  {% endif %}
+  <p><a href="{% url 'pages:home' %}">بازگشت به خانه</a></p>
+{% endblock %}

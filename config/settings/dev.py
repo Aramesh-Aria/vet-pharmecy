@@ -14,3 +14,9 @@ DATABASES = {
 }
 
 INTERNAL_IPS = ["127.0.0.1"]
+
+# Plain static storage in dev — no manifest/compression (that's for prod, and it
+# otherwise errors on admin assets before collectstatic runs).
+STORAGES["staticfiles"] = {  # noqa: F405
+    "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+}

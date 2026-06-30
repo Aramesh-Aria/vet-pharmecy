@@ -12,20 +12,36 @@ from .backends.base import BasePaymentBackend, StartResult
 from .models import Payment
 
 
+def active_backend_path() -> str:
+    """Dotted path of the backend in force: online gateway when enabled."""
+    if getattr(settings, "PAYMENTS_ONLINE_ENABLED", False):
+        return settings.PAYMENTS_ONLINE_BACKEND
+    return settings.PAYMENTS_BACKEND
+
+
 def get_backend() -> BasePaymentBackend:
-    return import_string(settings.PAYMENTS_BACKEND)()
+    """The active backend: online gateway when enabled, else pay-at-pickup."""
+    return import_string(active_backend_path())()
 
 
 def start_payment(payable, amount: int) -> StartResult:
     """Create a Payment for *payable* and start it on the active backend."""
-    backend = get_backend()
+    path = active_backend_path()
     payment = Payment.objects.create(
         content_type=ContentType.objects.get_for_model(payable),
         object_id=payable.pk,
         amount=amount,
-        backend=settings.PAYMENTS_BACKEND,
+        backend=path,  # record the backend actually used, for verify dispatch
     )
-    return backend.start(payment)
+    return import_string(path)().start(payment)
+
+
+def gateway_redirect_url(payable) -> str | None:
+    """Where to send the Owner to pay for *payable*, or None for pay-at-pickup."""
+    payment = payment_for(payable)
+    if payment is None:
+        return None
+    return import_string(payment.backend)().get_redirect_url(payment)
 
 
 def verify_payment(payment: Payment, data: dict) -> bool:

@@ -37,3 +37,8 @@ class BasePaymentBackend:
         double-settling.
         """
         raise NotImplementedError
+
+    def get_redirect_url(self, payment) -> str | None:
+        """Where to send the Owner to pay, derived from the stored payment.
+        None for out-of-band backends (e.g. pay-at-pickup)."""
+        return None

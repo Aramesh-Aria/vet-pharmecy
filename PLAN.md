@@ -206,10 +206,28 @@ Vet-team bios, Blog/pet-care articles, and anything from §9 as needed.
 ## 9. Deferred (explicitly out of v1)
 
 - Real-time self-service booking calendar.
-- Custom (non-admin) staff dashboard.
-- Delivery/shipping of orders (pickup only for now).
+- Custom (non-admin) staff dashboard — **interim:** the Django admin is enhanced
+  with an operational dashboard (pending appointments / orders / refills /
+  vaccinations due); a bespoke staff UI is a later phase, informed by real usage.
+- Delivery/shipping of orders (**pickup only at launch** — see future plan below).
 - Second language / English locale.
 - Full clinical EMR (labs, attachments, SOAP notes).
+
+### Future: delivery / shipping (post-launch, business rules captured)
+
+Eventually orders will ship, not only be picked up. The practice's intended
+model (to confirm + flesh out before building):
+
+- **Couriers:** Post (پست), Tipax, and Snapp! Box.
+- **Method availability by location:**
+  - **Same city as the clinic:** all methods available (Post, Tipax, Snapp! Box).
+  - **Different province:** only **Post** and **Tipax** (Snapp! Box is intra-city).
+- Implies the checkout needs the Owner's **delivery city/province** to filter
+  methods, plus per-method **fees** and order states (shipped / in-transit /
+  delivered) and tracking. `Order` extends cleanly for this (add fulfillment
+  method, address, fee, tracking) — no Phase-0-style abstraction needed up front.
+- **Still to decide with the practice:** fee model (flat / by-weight / by-zone),
+  cash-on-delivery vs prepaid, delivery radius, and per-courier integration.
 
 > **Note:** Online payment is the **target** model but is **phased to after
 > launch** (e-Namad → gateway, ADR-0005). The site launches payment-less with
