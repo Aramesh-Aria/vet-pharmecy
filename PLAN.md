@@ -98,7 +98,10 @@ core/            # base templates, RTL/Jalali helpers, mixins
   `role` (owner | staff), phone-verified flag.
 - **OwnerProfile** — name, address, notification prefs. 1–1 with User.
 - **Animal** (`animals`) — owner FK, animal_category FK, species, name, sex, birth
-  date, weight, photo.
+  date, weight, photo. Individual records for **companion pets and equine**.
+- **Herd** (`animals`) — owner FK, species, head-count, farm location. The
+  **livestock** unit (Ruminants); avoids one-row-per-head. Used for advice, farm
+  visits, and bulk medication/equipment supply.
 - **AnimalCategory** (`catalog`) — name, slug, image (the home tile), order.
 - **Section** — enum/choices: online_visit | medication | equipment | service.
 - **Product** (`catalog`) — animal_category FK, section (medication|equipment),
@@ -223,8 +226,11 @@ Vet-team bios, Blog/pet-care articles, and anything from §9 as needed.
   visit**, booked in advance, **paid online at booking**, not tied to a registered
   Animal, optionally ending in an electronic Prescription. Ships in Phase 5 with
   the gateway.
+- Livestock registration: **hybrid** (working model — to confirm with the
+  practice). Companion pets and equine get individual `Animal` records; livestock
+  (Ruminants) use a lighter `Herd` record (species, head-count, farm location)
+  rather than one-row-per-head.
 
 **Still open (asked of the practice)**
-1. **Livestock registration:** do owners of ruminants (sheep, goat, camel)
-   register each animal individually (like cat/dog profiles), or is herd-level
-   registration enough? Affects the `Animal` model.
+- Confirm the hybrid herd model with the practice (head-level vaccination/records
+  for livestock are out of scope unless they need them).

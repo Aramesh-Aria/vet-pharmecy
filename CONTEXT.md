@@ -23,10 +23,23 @@ livestock/horses.
 _Avoid_: Client, customer, user
 
 **Animal**:
-An animal belonging to an Owner; the subject of clinical care. Every Animal
-belongs to one Animal Category and has a Species. When spoken of clinically it
+An individual animal belonging to an Owner; the subject of clinical care, kept as
+a per-animal record for **companion pets and equine**. Belongs to one Animal
+Category and has a Species. We hold this data only to deliver Services, build a
+medical history (Visit Records, Vaccinations), issue Prescriptions, and drive
+reminders — nothing is collected that no use needs. When spoken of clinically it
 is the "patient," but we use one term: Animal.
 _Avoid_: Pet (a Pet is now one Animal Category, not the umbrella term), patient
+
+**Herd**:
+A group/flock record for **livestock** (Ruminants), used instead of registering
+each head individually — a farmer never makes 200 profiles, and the clinic does
+not want 200 rows. Captures species, approximate head-count, and farm location:
+enough to advise, schedule farm visits, and supply medication/equipment in bulk.
+It is the unit of care for livestock, where the relationship is commercial and
+treatment is population-level (herd vaccination, batch deworming) rather than
+per-animal. Companion pets and equine use Animal, not Herd.
+_Avoid_: Flock, group, batch (use Herd as the canonical term)
 
 **Animal Category**:
 A top-level grouping that organizes the whole site and catalog. The current set:
