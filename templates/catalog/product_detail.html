@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load persian %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+  <p><a href="{% url 'catalog:section' category.slug product.section %}">→ {{ product.get_section_display }}</a></p>
+  <h1>{{ product.name }}</h1>
+  {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width:320px">{% endif %}
+  <p>{{ product.description|linebreaksbr }}</p>
+  <p><strong>{{ product.price|toman }} ریال</strong></p>
+
+  {% if product.is_prescription_only %}
+    <p>این دارو فقط با نسخهٔ معتبر قابل تهیه است. لطفاً از بخش نسخه‌ها درخواست دهید.</p>
+  {% elif product.in_stock %}
+    <form method="post" action="{% url 'pharmacy:cart_add' product.pk %}">
+      {% csrf_token %}
+      <label>تعداد: <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width:5rem"></label>
+      <button type="submit">افزودن به سبد</button>
+    </form>
+  {% else %}
+    <p>ناموجود</p>
+  {% endif %}
+{% endblock %}

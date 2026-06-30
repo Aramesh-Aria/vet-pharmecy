@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load persian %}
+{% block title %}نسخه‌های من{% endblock %}
+{% block content %}
+  <h1>نسخه‌های من</h1>
+  <p><a href="{% url 'pharmacy:refill_list' %}">درخواست‌های تکرار نسخه</a></p>
+  {% if prescriptions %}
+    <ul>
+      {% for rx in prescriptions %}
+        <li>
+          {{ rx.product.name }} — برای {{ rx.animal.name }}
+          {% if rx.dosage %}({{ rx.dosage }}){% endif %}
+          {% if rx.is_active %}
+            <form method="post" action="{% url 'pharmacy:refill_request' rx.pk %}" style="display:inline">
+              {% csrf_token %}
+              <input type="number" name="quantity" value="1" min="1" style="width:4rem">
+              <button type="submit">درخواست تکرار</button>
+            </form>
+          {% else %}
+            <em>(غیرفعال)</em>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>نسخه‌ای برای شما ثبت نشده است. نسخه‌ها توسط دامپزشک صادر می‌شوند.</p>
+  {% endif %}
+{% endblock %}

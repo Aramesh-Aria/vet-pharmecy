@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load persian %}
+{% block title %}سفارش‌های من{% endblock %}
+{% block content %}
+  <h1>سفارش‌های من</h1>
+  {% if orders %}
+    <ul>
+      {% for order in orders %}
+        <li>
+          <a href="{{ order.get_absolute_url }}">سفارش #{{ order.pk|fa_digits }}</a>
+          — {{ order.get_status_display }} — {{ order.created_at|jalali }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>هنوز سفارشی ثبت نکرده‌اید.</p>
+  {% endif %}
+{% endblock %}

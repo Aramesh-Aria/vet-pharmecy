@@ -20,6 +20,11 @@ class Section(models.TextChoices):
     EQUIPMENT = "equipment", _("تجهیزات")
     SERVICE = "service", _("خدمات")
 
+    @classmethod
+    def product_sections(cls):
+        """Sections whose contents are physical Products (the store)."""
+        return (cls.MEDICATION, cls.EQUIPMENT)
+
 
 class AnimalCategory(ImageProcessingMixin, models.Model):
     """A top-level grouping (Ornamental Birds, Companion Pets, Equine,
@@ -47,3 +52,78 @@ class AnimalCategory(ImageProcessingMixin, models.Model):
 
     def get_absolute_url(self):
         return reverse("catalog:category", kwargs={"slug": self.slug})
+
+
+class Product(ImageProcessingMixin, models.Model):
+    """A physical item the pharmacy/store sells: a Medication or Equipment
+    (CONTEXT.md). Every Product carries an Animal Category and a (product)
+    Section, so it slots into the category-first navigation (ADR-0006).
+
+    Prices are stored as integer Rial (the settlement currency, ADR-0005).
+    """
+
+    image_specs = {"image": {"fit": (800, 800)}}
+
+    animal_category = models.ForeignKey(
+        AnimalCategory,
+        on_delete=models.PROTECT,
+        related_name="products",
+        verbose_name=_("دستهٔ حیوان"),
+    )
+    section = models.CharField(
+        _("بخش"),
+        max_length=20,
+        choices=[(s.value, s.label) for s in Section.product_sections()],
+    )
+    name = models.CharField(_("نام"), max_length=200)
+    slug = models.SlugField(_("نامک"), max_length=200, unique=True)
+    description = models.TextField(_("توضیح"), blank=True)
+    price = models.PositiveBigIntegerField(_("قیمت (ریال)"))
+    stock = models.PositiveIntegerField(_("موجودی"), default=0)
+    image = models.ImageField(_("تصویر"), upload_to="products/", blank=True)
+    is_prescription_only = models.BooleanField(
+        _("فقط با نسخه"),
+        default=False,
+        help_text=_("فقط برای داروها؛ بدون نسخهٔ معتبر قابل سفارش نیست."),
+    )
+    is_active = models.BooleanField(_("فعال"), default=True)
+    created_at = models.DateTimeField(_("ایجاد"), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("کالا")
+        verbose_name_plural = _("کالاها")
+        ordering = ["name"]
+        indexes = [models.Index(fields=["animal_category", "section", "is_active"])]
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if self.section not in Section.values:
+            raise ValidationError({"section": _("بخش نامعتبر است.")})
+        if self.is_prescription_only and self.section != Section.MEDICATION:
+            raise ValidationError(
+                {"is_prescription_only": _("فقط داروها می‌توانند «فقط با نسخه» باشند.")}
+            )
+
+    @property
+    def in_stock(self) -> bool:
+        return self.stock > 0
+
+    @property
+    def orderable(self) -> bool:
+        """Can an Owner add this straight to the cart? Prescription-only meds go
+        through the Prescription/Refill flow instead (ADR-0005)."""
+        return self.is_active and self.in_stock and not self.is_prescription_only
+
+    def get_absolute_url(self):
+        return reverse(
+            "catalog:product",
+            kwargs={
+                "slug": self.animal_category.slug,
+                "section": self.section,
+                "product_slug": self.slug,
+            },
+        )

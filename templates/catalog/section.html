@@ -1,11 +1,33 @@
 {% extends "base.html" %}
+{% load persian %}
 {% block title %}{{ category.name }} — {{ section_label }}{% endblock %}
 {% block content %}
   <p><a href="{% url 'catalog:category' category.slug %}">→ {{ category.name }}</a></p>
   <h1>{{ category.name }} — {{ section_label }}</h1>
 
-  {# Section contents are added in later phases: #}
-  {# Medication/Equipment -> Products + cart (Phase 2); Service -> Appointment #}
-  {# (Phase 3); Online Visit -> paid booking (Phase 5). #}
-  <p>محتوای این بخش به‌زودی اضافه می‌شود.</p>
+  {% if is_product_section %}
+    <form method="get">
+      <input type="search" name="q" value="{{ q }}" placeholder="جستجوی نام کالا">
+      <label><input type="checkbox" name="in_stock" {% if request.GET.in_stock %}checked{% endif %}> فقط موجود</label>
+      <button type="submit">فیلتر</button>
+    </form>
+
+    {% if products %}
+      <ul class="product-list">
+        {% for product in products %}
+          <li>
+            <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+            — {{ product.price|toman }} ریال
+            {% if not product.in_stock %}<em>(ناموجود)</em>
+            {% elif product.is_prescription_only %}<em>(فقط با نسخه)</em>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>کالایی یافت نشد.</p>
+    {% endif %}
+  {% else %}
+    {# Service -> Appointment (Phase 3); Online Visit -> paid booking (Phase 5). #}
+    <p>محتوای این بخش به‌زودی اضافه می‌شود.</p>
+  {% endif %}
 {% endblock %}

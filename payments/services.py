@@ -32,3 +32,15 @@ def verify_payment(payment: Payment, data: dict) -> bool:
     """Verify a payment via its originating backend (idempotent)."""
     backend = import_string(payment.backend)()
     return backend.verify(payment, data)
+
+
+def payment_for(payable) -> Payment | None:
+    """Return the most recent Payment attached to *payable*, if any."""
+    return (
+        Payment.objects.filter(
+            content_type=ContentType.objects.get_for_model(payable),
+            object_id=payable.pk,
+        )
+        .order_by("-created_at")
+        .first()
+    )

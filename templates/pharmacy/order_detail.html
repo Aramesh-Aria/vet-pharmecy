@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load persian %}
+{% block title %}سفارش #{{ order.pk|fa_digits }}{% endblock %}
+{% block content %}
+  <p><a href="{% url 'pharmacy:order_list' %}">→ سفارش‌های من</a></p>
+  <h1>سفارش #{{ order.pk|fa_digits }}</h1>
+  <p>وضعیت: <strong>{{ order.get_status_display }}</strong></p>
+  <p>تاریخ: {{ order.created_at|jalali }}</p>
+  <table>
+    <thead><tr><th>کالا</th><th>تعداد</th><th>قیمت واحد</th><th>جمع</th></tr></thead>
+    <tbody>
+      {% for item in order.items.all %}
+        <tr>
+          <td>{{ item.product_name }}</td>
+          <td>{{ item.quantity|fa_digits }}</td>
+          <td>{{ item.unit_price|toman }} ریال</td>
+          <td>{{ item.line_total|toman }} ریال</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p><strong>جمع کل: {{ order.total|toman }} ریال</strong></p>
+  <p>پرداخت هنگام تحویل در داروخانه انجام می‌شود.</p>
+{% endblock %}

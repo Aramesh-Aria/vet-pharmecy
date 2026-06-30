@@ -51,6 +51,7 @@ LOCAL_APPS = [
     "notifications",
     "catalog",
     "animals",
+    "pharmacy",
     "payments",
     "pages",
 ]
@@ -166,11 +167,14 @@ PAYMENTS_BACKEND = env(
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.ir")
 
-# SMS gateway — Iran-reachable only, never Twilio (ADR-0003). Console in dev.
+# SMS gateway — Iran-reachable only, never Twilio (ADR-0003). Console in dev;
+# set to notifications.backends.kavenegar.KavenegarSMSBackend in prod.
 SMS_BACKEND = env(
     "SMS_BACKEND",
     default="notifications.backends.console.ConsoleSMSBackend",
 )
+SMS_API_KEY = env("SMS_API_KEY", default="")
+SMS_SENDER = env("SMS_SENDER", default="")
 
 # One-time password (phone verification / reset) policy.
 OTP_TTL_SECONDS = env.int("OTP_TTL_SECONDS", default=120)

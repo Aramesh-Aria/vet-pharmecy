@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load persian %}
+{% block title %}تکرار نسخه #{{ refill.pk|fa_digits }}{% endblock %}
+{% block content %}
+  <p><a href="{% url 'pharmacy:refill_list' %}">→ درخواست‌های تکرار نسخه</a></p>
+  <h1>تکرار نسخه #{{ refill.pk|fa_digits }}</h1>
+  <ul>
+    <li>دارو: {{ refill.prescription.product.name }}</li>
+    <li>حیوان: {{ refill.prescription.animal.name }}</li>
+    <li>تعداد: {{ refill.quantity|fa_digits }}</li>
+    <li>وضعیت: <strong>{{ refill.get_status_display }}</strong></li>
+    {% if refill.price %}<li>قیمت: {{ refill.price|toman }} ریال (پرداخت هنگام تحویل)</li>{% endif %}
+    {% if refill.staff_note %}<li>یادداشت: {{ refill.staff_note }}</li>{% endif %}
+  </ul>
+{% endblock %}

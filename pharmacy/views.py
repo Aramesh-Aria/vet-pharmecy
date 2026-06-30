@@ -1,0 +1,135 @@
+"""Owner-facing store views: cart, checkout, orders, prescriptions, refills.
+
+Everything is login-required and scoped to the requesting Owner.
+"""
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.http import require_POST
+from django.views.generic import DetailView, ListView, TemplateView
+
+from catalog.models import Product
+
+from . import services
+from .models import Order, Prescription, RefillRequest
+
+
+# --- Cart ------------------------------------------------------------------
+class CartView(LoginRequiredMixin, TemplateView):
+    template_name = "pharmacy/cart.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["cart"] = services.get_cart(self.request.user)
+        return ctx
+
+
+@login_required
+@require_POST
+def cart_add(request, product_id):
+    product = get_object_or_404(Product, pk=product_id, is_active=True)
+    try:
+        quantity = int(request.POST.get("quantity", 1))
+    except (TypeError, ValueError):
+        quantity = 1
+    try:
+        services.add_to_cart(request.user, product, quantity)
+        messages.success(request, "به سبد افزوده شد.")
+    except ValidationError as exc:
+        messages.error(request, exc.messages[0])
+    return redirect(request.POST.get("next") or "pharmacy:cart")
+
+
+@login_required
+@require_POST
+def cart_update(request, product_id):
+    product = get_object_or_404(Product, pk=product_id)
+    try:
+        services.update_cart_item(request.user, product, int(request.POST.get("quantity", 0)))
+    except (ValidationError, ValueError) as exc:
+        messages.error(request, getattr(exc, "messages", ["مقدار نامعتبر"])[0])
+    return redirect("pharmacy:cart")
+
+
+@login_required
+@require_POST
+def cart_remove(request, product_id):
+    product = get_object_or_404(Product, pk=product_id)
+    services.remove_from_cart(request.user, product)
+    return redirect("pharmacy:cart")
+
+
+@login_required
+@require_POST
+def checkout(request):
+    try:
+        order = services.place_order(request.user)
+    except ValidationError as exc:
+        messages.error(request, exc.messages[0])
+        return redirect("pharmacy:cart")
+    messages.success(request, "سفارش شما ثبت شد. پرداخت هنگام تحویل در داروخانه.")
+    return redirect(order.get_absolute_url())
+
+
+# --- Orders ----------------------------------------------------------------
+class OrderListView(LoginRequiredMixin, ListView):
+    template_name = "pharmacy/order_list.html"
+    context_object_name = "orders"
+
+    def get_queryset(self):
+        return Order.objects.filter(owner=self.request.user)
+
+
+class OrderDetailView(LoginRequiredMixin, DetailView):
+    template_name = "pharmacy/order_detail.html"
+    context_object_name = "order"
+
+    def get_queryset(self):
+        return Order.objects.filter(owner=self.request.user)
+
+
+# --- Prescriptions & refills ----------------------------------------------
+class PrescriptionListView(LoginRequiredMixin, ListView):
+    template_name = "pharmacy/prescription_list.html"
+    context_object_name = "prescriptions"
+
+    def get_queryset(self):
+        return Prescription.objects.filter(
+            animal__owner=self.request.user
+        ).select_related("animal", "product")
+
+
+@login_required
+@require_POST
+def refill_request(request, prescription_id):
+    prescription = get_object_or_404(
+        Prescription, pk=prescription_id, animal__owner=request.user
+    )
+    try:
+        quantity = int(request.POST.get("quantity", 1))
+        refill = services.request_refill(request.user, prescription, quantity)
+    except (ValidationError, ValueError) as exc:
+        messages.error(request, getattr(exc, "messages", ["خطا"])[0])
+        return redirect("pharmacy:prescriptions")
+    messages.success(request, "درخواست تکرار نسخه ثبت شد.")
+    return redirect(refill.get_absolute_url())
+
+
+class RefillListView(LoginRequiredMixin, ListView):
+    template_name = "pharmacy/refill_list.html"
+    context_object_name = "refills"
+
+    def get_queryset(self):
+        return RefillRequest.objects.filter(owner=self.request.user).select_related(
+            "prescription__product"
+        )
+
+
+class RefillDetailView(LoginRequiredMixin, DetailView):
+    template_name = "pharmacy/refill_detail.html"
+    context_object_name = "refill"
+
+    def get_queryset(self):
+        return RefillRequest.objects.filter(owner=self.request.user)
