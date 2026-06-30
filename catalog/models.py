@@ -127,3 +127,37 @@ class Product(ImageProcessingMixin, models.Model):
                 "product_slug": self.slug,
             },
         )
+
+
+class Service(models.Model):
+    """An in-person offering the clinic performs for an Animal (CONTEXT.md) —
+    a procedure or treatment, booked via an Appointment and paid later. Lives in
+    the Service section of its Animal Category (ADR-0006)."""
+
+    animal_category = models.ForeignKey(
+        AnimalCategory,
+        on_delete=models.PROTECT,
+        related_name="services",
+        verbose_name=_("دستهٔ حیوان"),
+    )
+    name = models.CharField(_("نام"), max_length=200)
+    slug = models.SlugField(_("نامک"), max_length=200, unique=True)
+    description = models.TextField(_("توضیح"), blank=True)
+    duration_minutes = models.PositiveSmallIntegerField(
+        _("مدت تقریبی (دقیقه)"), null=True, blank=True
+    )
+    price = models.PositiveBigIntegerField(_("قیمت تقریبی (ریال)"), null=True, blank=True)
+    is_active = models.BooleanField(_("فعال"), default=True)
+
+    class Meta:
+        verbose_name = _("خدمت")
+        verbose_name_plural = _("خدمات")
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("catalog:section", kwargs={
+            "slug": self.animal_category.slug, "section": Section.SERVICE,
+        })

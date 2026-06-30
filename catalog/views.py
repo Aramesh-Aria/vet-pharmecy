@@ -11,7 +11,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 
-from .models import AnimalCategory, Product, Section
+from .models import AnimalCategory, Product, Section, Service
 
 
 class CategoryLandingView(TemplateView):
@@ -56,6 +56,10 @@ class SectionView(TemplateView):
                 products = products.filter(stock__gt=0)
             ctx["products"] = products
             ctx["q"] = q
+        elif section == Section.SERVICE:
+            ctx["services"] = Service.objects.filter(
+                animal_category=category, is_active=True
+            )
         return ctx
 
 

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AnimalCategory, Product
+from .models import AnimalCategory, Product, Service
 
 
 @admin.register(AnimalCategory)
@@ -19,5 +19,14 @@ class ProductAdmin(admin.ModelAdmin):
     )
     list_filter = ("animal_category", "section", "is_prescription_only", "is_active")
     list_editable = ("price", "stock", "is_active")
+    search_fields = ("name", "description")
+    prepopulated_fields = {"slug": ("name",)}
+
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ("name", "animal_category", "duration_minutes", "price", "is_active")
+    list_filter = ("animal_category", "is_active")
+    list_editable = ("is_active",)
     search_fields = ("name", "description")
     prepopulated_fields = {"slug": ("name",)}

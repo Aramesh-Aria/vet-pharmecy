@@ -49,7 +49,15 @@ WhiteNoise serves static files from the app, so no separate web server is needed
 | `catalog`       | AnimalCategory + Section taxonomy, Products, browse/filter (ADR-0006) |
 | `animals`       | Animal + Herd models, Owner-scoped CRUD                              |
 | `pharmacy`      | Cart, Order lifecycle, Prescriptions + Refill Requests               |
+| `appointments`  | Appointment request → Staff-confirm lifecycle                        |
+| `records`       | Visit Records, Vaccinations + due-date reminder job                  |
 | `payments`      | Payment model + backend interface; pay-at-pickup (ADR-0005)          |
 | `pages`         | Public home with category tiles                                      |
 
-Apps for appointments and records arrive in Phase 3 (see PLAN.md §8).
+Public content polish, business-identity/terms pages, and launch hardening are
+Phase 4; online payment + the Online Visit are Phase 5 (post-e-Namad).
+
+### Scheduled jobs
+
+`python manage.py send_vaccination_reminders [--days N]` — notify Owners of
+vaccinations coming due. Run from cron (e.g. daily) per PLAN §4.

@@ -26,8 +26,24 @@
     {% else %}
       <p>کالایی یافت نشد.</p>
     {% endif %}
+  {% elif section == "service" %}
+    {% if services %}
+      <ul class="service-list">
+        {% for service in services %}
+          <li>
+            <strong>{{ service.name }}</strong>
+            {% if service.duration_minutes %}— حدود {{ service.duration_minutes|fa_digits }} دقیقه{% endif %}
+            {% if service.price %}— {{ service.price|toman }} ریال{% endif %}
+            {% if service.description %}<br>{{ service.description }}{% endif %}
+            <br><a href="{% url 'appointments:request' %}?service={{ service.pk }}">درخواست نوبت</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>خدمتی برای این دسته ثبت نشده است.</p>
+    {% endif %}
   {% else %}
-    {# Service -> Appointment (Phase 3); Online Visit -> paid booking (Phase 5). #}
-    <p>محتوای این بخش به‌زودی اضافه می‌شود.</p>
+    {# Online Visit -> paid booking (Phase 5, post-gateway). #}
+    <p>این بخش پس از فعال‌سازی پرداخت آنلاین اضافه می‌شود.</p>
   {% endif %}
 {% endblock %}

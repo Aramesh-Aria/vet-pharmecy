@@ -39,4 +39,30 @@ EVENTS = {
         "email_subject": "آماده تحویل",
         "email_body": "{name} عزیز،\nتکرار نسخهٔ شماره {refill.pk} آمادهٔ تحویل است.",
     },
+    "appointment_requested": {
+        "sms": "درخواست نوبت شماره {appointment.pk} ثبت شد و در انتظار تأیید است.",
+        "email_subject": "ثبت درخواست نوبت",
+        "email_body": "{name} عزیز،\nدرخواست نوبت شماره {appointment.pk} ثبت شد.",
+    },
+    "appointment_confirmed": {
+        "sms": "نوبت شماره {appointment.pk} تأیید شد. زمان را در پنل کاربری ببینید.",
+        "email_subject": "تأیید نوبت",
+        "email_body": "{name} عزیز،\nنوبت شماره {appointment.pk} تأیید شد.",
+    },
+    "appointment_cancelled": {
+        "sms": "نوبت شماره {appointment.pk} لغو شد.",
+        "email_subject": "لغو نوبت",
+        "email_body": "{name} عزیز،\nنوبت شماره {appointment.pk} لغو شد.",
+    },
+    "appointment_completed": {
+        "sms": "نوبت شماره {appointment.pk} انجام شد. از مراجعهٔ شما سپاسگزاریم.",
+        "email_subject": "انجام نوبت",
+        "email_body": "{name} عزیز،\nنوبت شماره {appointment.pk} انجام شد.",
+    },
+    "vaccination_due": {
+        "sms": "یادآوری: واکسن «{vaccination.vaccine_name}» برای {vaccination.animal.name} نزدیک است.",
+        "email_subject": "یادآوری واکسیناسیون",
+        "email_body": "{name} عزیز،\nموعد واکسن «{vaccination.vaccine_name}» برای "
+                      "{vaccination.animal.name} نزدیک است.",
+    },
 }

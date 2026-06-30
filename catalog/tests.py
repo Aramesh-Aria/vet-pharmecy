@@ -2,7 +2,7 @@ import pytest
 from django.test import Client
 from django.urls import reverse
 
-from catalog.models import AnimalCategory, Product, Section
+from catalog.models import AnimalCategory, Product, Section, Service
 
 
 @pytest.mark.django_db
@@ -79,6 +79,18 @@ def test_product_detail_renders_and_filters_by_category_section():
     # Wrong section in the URL must not resolve to the product.
     bad = Client().get(reverse("catalog:product", args=["companion-pets", "medication", "leash"]))
     assert bad.status_code == 404
+
+
+@pytest.mark.django_db
+def test_service_section_lists_active_services():
+    cat = AnimalCategory.objects.get(slug="companion-pets")
+    Service.objects.create(animal_category=cat, name="واکسیناسیون", slug="vax")
+    Service.objects.create(
+        animal_category=cat, name="خدمت غیرفعال", slug="inactive-svc", is_active=False
+    )
+    body = Client().get(reverse("catalog:section", args=["companion-pets", "service"])).content.decode()
+    assert "واکسیناسیون" in body
+    assert "خدمت غیرفعال" not in body
 
 
 @pytest.mark.django_db

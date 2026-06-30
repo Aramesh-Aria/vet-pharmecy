@@ -16,4 +16,33 @@
     <a href="{% url 'animals:update' animal.pk %}">ویرایش</a> ·
     <a href="{% url 'animals:delete' animal.pk %}">حذف</a>
   </p>
+
+  <section>
+    <h2>تاریخچهٔ ویزیت</h2>
+    {% if visit_records %}
+      <ul>
+        {% for v in visit_records %}
+          <li>{{ v.date|jalali }} — {{ v.service.name|default:"—" }}{% if v.notes %}: {{ v.notes }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>ویزیتی ثبت نشده است.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>واکسیناسیون</h2>
+    {% if vaccinations %}
+      <ul>
+        {% for vac in vaccinations %}
+          <li>
+            {{ vac.vaccine_name }} — تزریق: {{ vac.date_given|jalali }}
+            {% if vac.next_due %}— نوبت بعدی: {{ vac.next_due|jalali }}{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>واکسیناسیونی ثبت نشده است.</p>
+    {% endif %}
+  </section>
 {% endblock %}

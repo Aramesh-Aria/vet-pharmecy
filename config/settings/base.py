@@ -52,6 +52,8 @@ LOCAL_APPS = [
     "catalog",
     "animals",
     "pharmacy",
+    "appointments",
+    "records",
     "payments",
     "pages",
 ]
@@ -179,3 +181,6 @@ SMS_SENDER = env("SMS_SENDER", default="")
 # One-time password (phone verification / reset) policy.
 OTP_TTL_SECONDS = env.int("OTP_TTL_SECONDS", default=120)
 OTP_MAX_ATTEMPTS = env.int("OTP_MAX_ATTEMPTS", default=5)
+
+# How many days ahead to remind Owners of a due vaccination (PLAN §3).
+VACCINATION_REMINDER_DAYS = env.int("VACCINATION_REMINDER_DAYS", default=7)

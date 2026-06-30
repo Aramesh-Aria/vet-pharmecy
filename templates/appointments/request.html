@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}درخواست نوبت{% endblock %}
+{% block content %}
+  <h1>درخواست نوبت</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <p>
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label><br>
+        {{ field }}
+        {{ field.errors }}
+      </p>
+    {% endfor %}
+    <button type="submit">ثبت درخواست</button>
+  </form>
+  <p>حیوانی ندارید؟ <a href="{% url 'animals:create' %}">افزودن حیوان</a></p>
+{% endblock %}

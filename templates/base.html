@@ -32,6 +32,7 @@
     <nav>
       {% if user.is_authenticated %}
         <a href="{% url 'animals:list' %}">حیوانات من</a>
+        <a href="{% url 'appointments:list' %}">نوبت‌ها</a>
         <a href="{% url 'pharmacy:order_list' %}">سفارش‌ها</a>
         <a href="{% url 'pharmacy:prescriptions' %}">نسخه‌ها</a>
         <a href="{% url 'pharmacy:cart' %}">سبد</a>

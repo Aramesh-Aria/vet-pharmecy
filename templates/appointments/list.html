@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load persian %}
+{% block title %}نوبت‌های من{% endblock %}
+{% block content %}
+  <h1>نوبت‌های من</h1>
+  <p><a href="{% url 'appointments:request' %}">+ درخواست نوبت جدید</a></p>
+  {% if appointments %}
+    <ul>
+      {% for appt in appointments %}
+        <li>
+          <a href="{{ appt.get_absolute_url }}">نوبت #{{ appt.pk|fa_digits }}</a>
+          — {{ appt.service.name }} برای {{ appt.animal.name }}
+          — {{ appt.get_status_display }}
+          {% if appt.confirmed_datetime %}— {{ appt.confirmed_datetime|jalali:"%Y/%m/%d %H:%M" }}{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>نوبتی ثبت نکرده‌اید.</p>
+  {% endif %}
+{% endblock %}

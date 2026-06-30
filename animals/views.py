@@ -50,6 +50,13 @@ class AnimalDetailView(OwnerScopedMixin, DetailView):
     model = Animal
     template_name = "animals/animal_detail.html"
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        animal = self.object
+        ctx["visit_records"] = animal.visit_records.all()
+        ctx["vaccinations"] = animal.vaccinations.all()
+        return ctx
+
 
 class AnimalCreateView(OwnerCreateMixin, CreateView):
     model = Animal
