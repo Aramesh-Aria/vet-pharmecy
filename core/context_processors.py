@@ -5,6 +5,7 @@ active categories and the signed-in owner's cart count must be available to
 ``base.html`` everywhere — not just on views that happen to pass them.
 """
 from catalog.models import AnimalCategory
+from pages.models import Practice
 from pharmacy.models import Cart
 
 
@@ -17,4 +18,8 @@ def site_chrome(request):
         if cart is not None:
             cart_count = cart.item_count
 
-    return {"nav_categories": categories, "cart_count": cart_count}
+    return {
+        "nav_categories": categories,
+        "cart_count": cart_count,
+        "practice": Practice.get(),
+    }

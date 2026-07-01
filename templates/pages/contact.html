@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load persian %}
+{% block title %}تماس با ما{% endblock %}
+{% block meta_description %}راه‌های تماس و نشانی {{ practice.name }} در {{ practice.city }}، {{ practice.province }}.{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap" style="max-width:52rem">
+    <div class="section__head reveal">
+      <p class="eyebrow">ارتباط با ما</p>
+      <h1 class="title">تماس و نشانی</h1>
+      <p class="lede">برای نوبت، مشاوره یا خرید با ما در تماس باشید.</p>
+    </div>
+
+    <div class="form-card reveal">
+      <dl class="dl">
+        <dt>نشانی</dt>
+        <dd>{{ practice.province }}، {{ practice.city }}{% if practice.address %} — {{ practice.address }}{% endif %}</dd>
+        {% if practice.postal_code %}<dt>کد پستی</dt><dd class="num">{{ practice.postal_code|fa_digits }}</dd>{% endif %}
+        {% if practice.phone %}<dt>تلفن</dt><dd><a href="tel:{{ practice.phone }}" dir="ltr">{{ practice.phone|fa_digits }}</a></dd>{% endif %}
+        {% if practice.mobile %}<dt>همراه</dt><dd><a href="tel:{{ practice.mobile }}" dir="ltr">{{ practice.mobile|fa_digits }}</a></dd>{% endif %}
+        {% if practice.email %}<dt>ایمیل</dt><dd dir="ltr">{{ practice.email }}</dd>{% endif %}
+        <dt>ساعات کاری</dt><dd>{{ practice.hours }}</dd>
+      </dl>
+      {% if practice.map_embed_url %}
+        <p style="margin-top:1rem"><a class="btn btn--ghost btn--sm" href="{{ practice.map_embed_url }}" target="_blank" rel="noopener">مشاهده روی نقشه</a></p>
+      {% endif %}
+    </div>
+
+    <div class="form-card reveal" data-delay="1" style="margin-top:1.4rem">
+      <h2 class="title" style="font-size:1.3rem;margin:0 0 1rem">ارسال پیام</h2>
+      <form method="post" novalidate class="form">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary">ارسال پیام</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

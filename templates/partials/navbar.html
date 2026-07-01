@@ -1,0 +1,37 @@
+{% load persian %}
+<nav class="nav" id="primary-nav" data-open="false" aria-label="ناوبری اصلی">
+  {% if nav_categories %}
+    <details class="nav-cat">
+      <summary class="nav-cat__summary"><span class="nav-cat__label">دسته‌ها ▾</span></summary>
+      <div class="nav-cat__panel">
+        {% for cat in nav_categories %}
+          <a href="{{ cat.get_absolute_url }}">
+            <svg class="specimen__glyph" style="width:1.1rem;height:1.1rem;color:var(--moss)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3c4 2 6 5 6 9a6 6 0 0 1-12 0c0-4 2-7 6-9Z"/><path d="M12 3v18"/></svg>
+            {{ cat.name }}
+          </a>
+        {% endfor %}
+      </div>
+    </details>
+  {% endif %}
+  <a href="{% url 'catalog:products' %}">فروشگاه</a>
+
+  {% if user.is_authenticated %}
+    <a href="{% url 'animals:list' %}">حیوانات من</a>
+    <a href="{% url 'appointments:list' %}">نوبت‌ها</a>
+    <a href="{% url 'pharmacy:order_list' %}">سفارش‌ها</a>
+    <a href="{% url 'pharmacy:prescriptions' %}">نسخه‌ها</a>
+    <a href="{% url 'accounts:profile' %}">پروفایل</a>
+    <a class="cart-link" href="{% url 'pharmacy:cart' %}" aria-label="سبد خرید">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="vertical-align:-5px"><path d="M6 6h15l-1.5 9h-12L6 6Z"/><path d="M6 6 5 3H3"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
+      سبد
+      {% if cart_count %}<span class="cart-badge">{{ cart_count|fa_digits }}</span>{% endif %}
+    </a>
+    <form action="{% url 'accounts:logout' %}" method="post" style="display:inline">
+      {% csrf_token %}
+      <button type="submit" class="nav__logout">خروج</button>
+    </form>
+  {% else %}
+    <a href="{% url 'accounts:login' %}">ورود</a>
+    <a class="btn btn--primary btn--sm nav__cta" href="{% url 'accounts:register' %}">ثبت‌نام</a>
+  {% endif %}
+</nav>

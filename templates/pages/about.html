@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}دربارهٔ ما{% endblock %}
+{% block meta_description %}دربارهٔ {{ practice.name }} — {{ practice.tagline }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap" style="max-width:48rem">
+    <div class="section__head reveal">
+      <p class="eyebrow">دربارهٔ ما</p>
+      <h1 class="title">{{ practice.name }}</h1>
+      {% if practice.tagline %}<p class="lede">{{ practice.tagline }}</p>{% endif %}
+    </div>
+
+    <div class="form-card reveal prose">
+      {% if practice.about %}
+        {{ practice.about|linebreaks }}
+      {% else %}
+        <p>{{ practice.name }} یک درمانگاه و داروخانهٔ دامپزشکی در {{ practice.city }}، {{ practice.province }}
+        است که به همهٔ جانوران — از همدمان خانه تا دام و طیور مزرعه — خدمت می‌رساند.
+        خدمات ما شامل ویزیت و معاینه، دارو و تجهیزات، و مراقبت‌های تخصصی است.</p>
+        <p>این متن نمونه است و از بخش «مشخصات کسب‌وکار» در پنل مدیریت قابل ویرایش است.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
