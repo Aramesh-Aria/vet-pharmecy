@@ -9,12 +9,16 @@ from .models import Appointment
 @admin.register(Appointment)
 class AppointmentAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = (
-        "id", "owner", "animal", "service", "status",
+        "id", "owner", "subject", "service", "status",
         "preferred_date", "confirmed_datetime", "vet",
     )
     list_filter = ("status", "is_online", "preferred_date")
-    search_fields = ("owner__phone", "owner__full_name", "animal__name", "id")
-    autocomplete_fields = ("owner", "animal", "service", "vet")
+    search_fields = ("owner__phone", "owner__full_name", "animal__name", "herd__name", "id")
+    autocomplete_fields = ("owner", "animal", "herd", "service", "vet")
+
+    @admin.display(description="حیوان/گله")
+    def subject(self, obj):
+        return obj.subject
     actions = ("confirm", "complete", "cancel", "mark_no_show")
 
     @admin.action(description="تأیید نوبت‌ها (نیازمند زمان تأییدشده)")

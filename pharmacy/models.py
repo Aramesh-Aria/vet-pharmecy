@@ -45,12 +45,24 @@ class CartItem(models.Model):
         "catalog.Product", on_delete=models.CASCADE, verbose_name=_("کالا")
     )
     quantity = models.PositiveIntegerField(_("تعداد"), default=1)
+    # Set when this line is a prescription-only medication authorised by a
+    # specific Prescription (null for ordinary over-the-counter products).
+    prescription = models.ForeignKey(
+        "pharmacy.Prescription",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="cart_items",
+        verbose_name=_("نسخه"),
+    )
 
     class Meta:
         verbose_name = _("قلم سبد")
         verbose_name_plural = _("اقلام سبد")
         constraints = [
-            models.UniqueConstraint(fields=["cart", "product"], name="uniq_cart_product")
+            models.UniqueConstraint(
+                fields=["cart", "product", "prescription"], name="uniq_cart_product_rx"
+            )
         ]
 
     def __str__(self):
@@ -113,6 +125,16 @@ class OrderItem(models.Model):
     product_name = models.CharField(_("نام کالا"), max_length=200)
     unit_price = models.PositiveBigIntegerField(_("قیمت واحد (ریال)"))
     quantity = models.PositiveIntegerField(_("تعداد"))
+    # Which Prescription authorised this line (null for OTC). Used to track how
+    # much of an authorised quantity has been ordered.
+    prescription = models.ForeignKey(
+        "pharmacy.Prescription",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="order_items",
+        verbose_name=_("نسخه"),
+    )
 
     class Meta:
         verbose_name = _("قلم سفارش")
@@ -151,6 +173,11 @@ class Prescription(models.Model):
         related_name="issued_prescriptions",
         verbose_name=_("صادرکننده"),
     )
+    quantity = models.PositiveIntegerField(
+        _("تعداد مجاز"),
+        default=1,
+        help_text=_("حداکثر تعدادی که بیمار می‌تواند بر اساس این نسخه سفارش دهد."),
+    )
     dosage = models.CharField(_("دستور مصرف"), max_length=255, blank=True)
     notes = models.TextField(_("توضیحات"), blank=True)
     refills_allowed = models.PositiveSmallIntegerField(_("تعداد تکرار مجاز"), default=0)
@@ -185,18 +212,36 @@ class Prescription(models.Model):
     def owner(self):
         return self.animal.owner
 
+    @property
+    def ordered_quantity(self) -> int:
+        """Units already ordered against this prescription (excludes cancelled)."""
+        from django.db.models import Sum
+
+        agg = self.order_items.exclude(
+            order__status=Order.Status.CANCELLED
+        ).aggregate(total=Sum("quantity"))
+        return agg["total"] or 0
+
+    @property
+    def remaining_quantity(self) -> int:
+        """How many units the Owner may still order on this prescription."""
+        return max(0, self.quantity - self.ordered_quantity)
+
+    @property
+    def is_orderable(self) -> bool:
+        return self.is_active and self.remaining_quantity > 0 and self.product.is_active
+
 
 class RefillRequest(models.Model):
     """An Owner's request to have an existing Prescription dispensed again.
-    Staff approve & price it before it becomes payable (approve-then-pay,
-    ADR-0005)."""
+    Staff approve it (optionally adjusting the quantity); approval grants that
+    many extra units to the prescription's allowance, which the Owner then
+    orders through the normal cart/Order flow — no separate price/payment."""
 
     class Status(models.TextChoices):
         REQUESTED = "requested", _("درخواست‌شده")
         APPROVED = "approved", _("تأییدشده")
         DECLINED = "declined", _("ردشده")
-        READY = "ready", _("آمادهٔ تحویل")
-        COLLECTED = "collected", _("تحویل‌شده")
         CANCELLED = "cancelled", _("لغوشده")
 
     prescription = models.ForeignKey(
@@ -211,11 +256,16 @@ class RefillRequest(models.Model):
         related_name="refill_requests",
         verbose_name=_("مشتری"),
     )
-    quantity = models.PositiveIntegerField(_("تعداد"), default=1)
+    quantity = models.PositiveIntegerField(
+        _("تعداد"), default=1,
+        help_text=_("تعدادی که به مجاز نسخه افزوده می‌شود تا بیمار سفارش دهد."),
+    )
     status = models.CharField(
         _("وضعیت"), max_length=12, choices=Status.choices, default=Status.REQUESTED
     )
-    price = models.PositiveBigIntegerField(_("قیمت (ریال)"), null=True, blank=True)
+    # True once approval has added this quantity to the prescription allowance,
+    # so re-saving an approved refill doesn't grant it twice.
+    allowance_granted = models.BooleanField(_("مقدار اعمال شد"), default=False)
     staff_note = models.TextField(_("یادداشت همکار"), blank=True)
     created_at = models.DateTimeField(_("ثبت"), auto_now_add=True)
     updated_at = models.DateTimeField(_("به‌روزرسانی"), auto_now=True)

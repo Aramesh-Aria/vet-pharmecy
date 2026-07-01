@@ -23,19 +23,18 @@
       <dl class="dl">
         <dt>دارو</dt><dd>{{ refill.prescription.product.name }}</dd>
         <dt>حیوان</dt><dd>{{ refill.prescription.animal.name }}</dd>
-        <dt>تعداد</dt><dd class="num">{{ refill.quantity|fa_digits }}</dd>
-        {% if refill.price %}<dt>قیمت</dt><dd class="num">{{ refill.price|toman }} ریال</dd>{% endif %}
+        <dt>تعداد درخواستی</dt><dd class="num">{{ refill.quantity|fa_digits }}</dd>
         {% if refill.staff_note %}<dt>یادداشت کلینیک</dt><dd>{{ refill.staff_note }}</dd>{% endif %}
       </dl>
     </div>
 
-    {% if refill.price %}
-      <div class="notice notice--pickup reveal" data-delay="2" style="margin-top:1.4rem">
+    {% if refill.status == 'approved' %}
+      <div class="notice reveal" data-delay="2" style="margin-top:1.4rem">
         <span class="notice__icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 9h13v8H3zM16 12h3l2 3v2h-5"/><circle cx="7" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 6 9 17l-5-5"/></svg>
         </span>
-        <div><strong>پرداخت هنگام تحویل.</strong>
-          <p style="margin:.2rem 0 0;color:var(--muted)">پس از آماده شدن، مبلغ را هنگام دریافت در داروخانه بپردازید.</p>
+        <div><strong>تأیید شد.</strong>
+          <p style="margin:.2rem 0 0;color:var(--muted)">مقدار تأییدشده به نسخهٔ شما افزوده شد. اکنون می‌توانید داروی خود را از بخش <a href="{% url 'pharmacy:prescriptions' %}">نسخه‌های من</a> به سبد افزوده و سفارش دهید.</p>
         </div>
       </div>
     {% elif refill.status == 'requested' %}
@@ -44,7 +43,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
         </span>
         <div><strong>در انتظار بررسی.</strong>
-          <p style="margin:.2rem 0 0;color:var(--muted)">پس از تأیید و قیمت‌گذاری توسط همکاران، وضعیت به‌روزرسانی می‌شود.</p>
+          <p style="margin:.2rem 0 0;color:var(--muted)">پس از تأیید توسط همکاران، مقدار به نسخهٔ شما افزوده می‌شود و می‌توانید سفارش دهید.</p>
         </div>
       </div>
     {% endif %}

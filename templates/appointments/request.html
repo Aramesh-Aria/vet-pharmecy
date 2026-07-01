@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}درخواست نوبت{% endblock %}
 
 {% block content %}
@@ -28,4 +29,8 @@
     <p class="auth__alt" style="text-align:start;margin-top:1.2rem">حیوانی ندارید؟ <a href="{% url 'animals:create' %}">ابتدا یک حیوان اضافه کنید</a></p>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_body %}
+<script src="{% static 'js/appointment_form.js' %}" defer></script>
 {% endblock %}

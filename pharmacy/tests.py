@@ -197,6 +197,68 @@ def test_prescription_requires_prescription_only_product(owner, category, produc
         rx.full_clean()
 
 
+@pytest.fixture
+def prescription_for_pet(owner, category, rx_product):
+    rx_product.stock = 50  # enough stock to exercise the full allowance
+    rx_product.save()
+    animal = Animal.objects.create(
+        owner=owner, animal_category=category, name="پشمک", species="گربه"
+    )
+    vet = User.objects.create_user(phone="09120000044", password="Str0ngPass!9")
+    return Prescription.objects.create(
+        animal=animal, product=rx_product, issued_by=vet, quantity=10
+    )
+
+
+@override_settings(SMS_BACKEND=LOCMEM)
+@pytest.mark.django_db
+def test_order_prescription_up_to_allowance_and_remainder_later(owner, prescription_for_pet):
+    rx = prescription_for_pet
+    assert rx.remaining_quantity == 10
+
+    # Order 4 of 10 now.
+    services.add_prescription_to_cart(owner, rx, 4)
+    order = services.place_order(owner)
+    assert order.items.get().prescription_id == rx.pk
+    assert rx.remaining_quantity == 6  # 4 ordered
+
+    # Come back and order 6 more — down to zero.
+    services.add_prescription_to_cart(owner, rx, 6)
+    services.place_order(owner)
+    assert rx.remaining_quantity == 0
+    assert not rx.is_orderable
+
+
+@pytest.mark.django_db
+def test_cannot_order_more_than_prescribed(owner, prescription_for_pet):
+    with pytest.raises(ValidationError):
+        services.add_prescription_to_cart(owner, prescription_for_pet, 11)
+
+
+@pytest.mark.django_db
+def test_cancelled_order_restores_prescription_allowance(owner, prescription_for_pet):
+    rx = prescription_for_pet
+    services.add_prescription_to_cart(owner, rx, 5)
+    order = services.place_order(owner)
+    assert rx.remaining_quantity == 5
+    services.set_order_status(order, Order.Status.CANCELLED)
+    assert rx.remaining_quantity == 10  # freed again
+
+
+@pytest.mark.django_db
+def test_prescription_only_still_blocked_from_plain_cart(owner, rx_product):
+    # The OTC path must still refuse prescription-only meds (must use the Rx flow).
+    with pytest.raises(ValidationError):
+        services.add_to_cart(owner, rx_product, 1)
+
+
+@pytest.mark.django_db
+def test_prescription_add_rejects_foreign_owner(prescription_for_pet):
+    stranger = User.objects.create_user(phone="09120000099", password="Str0ngPass!9")
+    with pytest.raises(ValidationError):
+        services.add_prescription_to_cart(stranger, prescription_for_pet, 1)
+
+
 @pytest.mark.django_db
 def test_prescription_rejects_product_from_other_category(owner, category):
     # A bird medication must not be prescribable for a cat (different category).
@@ -216,22 +278,29 @@ def test_prescription_rejects_product_from_other_category(owner, category):
 
 @override_settings(SMS_BACKEND=LOCMEM)
 @pytest.mark.django_db
-def test_refill_approve_prices_and_creates_payment(owner, prescription):
-    refill = services.request_refill(owner, prescription, 1)
+def test_refill_approve_grants_allowance_no_price(owner, prescription):
+    before = prescription.quantity
+    refill = services.request_refill(owner, prescription, 3)
     assert refill.status == RefillRequest.Status.REQUESTED
 
-    services.set_refill_status(refill, RefillRequest.Status.APPROVED, price=800_000)
+    # Approving grants the quantity to the prescription; no price/payment.
+    services.set_refill_status(refill, RefillRequest.Status.APPROVED)
     refill.refresh_from_db()
-    assert refill.price == 800_000
-    payment = payment_for(refill)
-    assert payment is not None and payment.amount == 800_000
+    prescription.refresh_from_db()
+    assert refill.status == RefillRequest.Status.APPROVED
+    assert refill.allowance_granted
+    assert prescription.quantity == before + 3
+    assert payment_for(refill) is None
 
 
 @pytest.mark.django_db
-def test_refill_approve_without_price_raises(owner, prescription):
-    refill = services.request_refill(owner, prescription, 1)
-    with pytest.raises(ValidationError):
-        services.set_refill_status(refill, RefillRequest.Status.APPROVED)
+def test_refill_approve_is_idempotent(owner, prescription):
+    before = prescription.quantity
+    refill = services.request_refill(owner, prescription, 2)
+    services.set_refill_status(refill, RefillRequest.Status.APPROVED)
+    services.set_refill_status(refill, RefillRequest.Status.APPROVED)  # re-saved
+    prescription.refresh_from_db()
+    assert prescription.quantity == before + 2  # granted only once
 
 
 @pytest.mark.django_db
@@ -239,3 +308,27 @@ def test_request_refill_rejects_foreign_prescription(prescription):
     stranger = User.objects.create_user(phone="09120000009", password="Str0ngPass!9")
     with pytest.raises(ValidationError):
         services.request_refill(stranger, prescription, 1)
+
+
+@override_settings(SMS_BACKEND=LOCMEM)
+@pytest.mark.django_db
+def test_admin_can_approve_refill_without_price(owner, prescription):
+    # Reproduces the reported bug: approving a refill in the admin no longer
+    # demands a price; it grants the quantity to the prescription instead.
+    admin = User.objects.create_superuser(phone="09120000000", password="Str0ngPass!9")
+    refill = services.request_refill(owner, prescription, 2)
+    before = prescription.quantity
+
+    client = Client()
+    client.force_login(admin)
+    url = reverse("admin:pharmacy_refillrequest_change", args=[refill.pk])
+    resp = client.post(url, {
+        "prescription": prescription.pk,
+        "owner": owner.pk,
+        "quantity": refill.quantity,
+        "status": "approved",
+        "staff_note": "",
+    })
+    assert resp.status_code == 302  # saved without a ValidationError
+    prescription.refresh_from_db()
+    assert prescription.quantity == before + 2

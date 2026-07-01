@@ -52,6 +52,8 @@
         {% elif product.in_stock %}
           <form class="pdp__buy" method="post" action="{% url 'pharmacy:cart_add' product.pk %}">
             {% csrf_token %}
+            {# Stay on this page after adding, so the user can keep browsing. #}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
             <div class="field">
               <span class="label">تعداد</span>
               <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" data-qty aria-label="تعداد">

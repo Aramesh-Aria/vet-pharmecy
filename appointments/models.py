@@ -36,6 +36,15 @@ class Appointment(models.Model):
         blank=True,
         verbose_name=_("حیوان"),
     )
+    # Livestock appointments (farm visits) target a Herd instead of an Animal.
+    herd = models.ForeignKey(
+        "animals.Herd",
+        on_delete=models.CASCADE,
+        related_name="appointments",
+        null=True,
+        blank=True,
+        verbose_name=_("گله"),
+    )
     service = models.ForeignKey(
         "catalog.Service",
         on_delete=models.PROTECT,
@@ -77,13 +86,34 @@ class Appointment(models.Model):
     def __str__(self):
         return f"نوبت #{self.pk}"
 
+    @property
+    def subject(self):
+        """The Animal or Herd this appointment is for."""
+        return self.animal or self.herd
+
+    @property
+    def subject_category_id(self):
+        subject = self.subject
+        return subject.animal_category_id if subject else None
+
     def clean(self):
-        # In-person Service appointments need both an animal and a service.
+        # In-person Service appointments need a subject (Animal or Herd) + service.
         if not self.is_online:
-            if self.animal_id is None:
-                raise ValidationError({"animal": _("برای خدمت حضوری، انتخاب حیوان لازم است.")})
+            if self.animal_id is None and self.herd_id is None:
+                raise ValidationError(
+                    {"animal": _("برای خدمت حضوری، انتخاب حیوان یا گله لازم است.")}
+                )
+            if self.animal_id and self.herd_id:
+                raise ValidationError(_("همزمان حیوان و گله قابل انتخاب نیست."))
             if self.service_id is None:
                 raise ValidationError({"service": _("انتخاب خدمت لازم است.")})
+            # The service must belong to the subject's Animal Category.
+            if self.service_id and self.subject_category_id and (
+                self.service.animal_category_id != self.subject_category_id
+            ):
+                raise ValidationError(
+                    {"service": _("این خدمت با دستهٔ انتخاب‌شده همخوانی ندارد.")}
+                )
 
     def get_absolute_url(self):
         return reverse("appointments:detail", kwargs={"pk": self.pk})

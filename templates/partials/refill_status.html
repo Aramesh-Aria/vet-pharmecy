@@ -1,2 +1,2 @@
 {% comment %}Refill request status badge. Expects `refill`.{% endcomment %}
-<span class="status {% if refill.status == 'requested' %}status--pending{% elif refill.status == 'approved' %}status--ok{% elif refill.status == 'ready' %}status--ready{% elif refill.status == 'collected' %}status--done{% else %}status--cancel{% endif %}">{{ refill.get_status_display }}</span>
+<span class="status {% if refill.status == 'requested' %}status--pending{% elif refill.status == 'approved' %}status--ok{% else %}status--cancel{% endif %}">{{ refill.get_status_display }}</span>

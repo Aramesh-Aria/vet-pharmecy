@@ -26,10 +26,12 @@
 .jdate__icon { position: absolute; inset-inline-end: .5rem; inset-block-start: 50%; transform: translateY(-50%);
   background: none; border: none; cursor: pointer; color: var(--moss); padding: .3rem; line-height: 0; border-radius: 6px; }
 .jdate__icon:hover { background: var(--surface-2); color: var(--forest); }
-.jdate__pop { position: absolute; inset-inline-start: 0; top: calc(100% + .4rem); z-index: 40;
+.jdate__pop { position: absolute; inset-inline-start: 0; top: calc(100% + .4rem); z-index: 1000;
   width: 18rem; max-width: 90vw; background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: .8rem; }
-.jdate__bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+.jdate__pop--up { top: auto; bottom: calc(100% + .4rem); }
+.jdate__bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; position: relative; z-index: 1; }
+.jdate__navs { display: inline-flex; gap: .25rem; }
 .jdate__title { font-weight: 700; color: var(--forest); }
 .jdate__nav { width: 2rem; height: 2rem; border: 1px solid var(--line); background: var(--surface);
   border-radius: 8px; cursor: pointer; font-size: 1.1rem; color: var(--forest); line-height: 1; }

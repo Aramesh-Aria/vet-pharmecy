@@ -55,25 +55,25 @@ class JalaliDateInput(forms.DateInput):
 
 
 class CategoryDataSelect(forms.Select):
-    """A ``<select>`` that tags each option with ``data-category`` so admin JS
-    can filter options to a chosen Animal Category (used in the prescription
-    admin to limit medications to the selected pet's category)."""
+    """A ``<select>`` that tags each option with ``data-category`` so JS can
+    filter options to a chosen Animal Category. Used in the prescription admin
+    (medications for the pet's category) and the appointment form (services for
+    the subject's category). Keyed by the option value as a string, so it works
+    with model PKs and composite values like ``animal:5`` alike."""
 
-    def __init__(self, attrs=None, choices=(), category_by_pk=None):
+    def __init__(self, attrs=None, choices=(), category_by_value=None):
         super().__init__(attrs, choices)
-        self.category_by_pk = category_by_pk or {}
+        self.category_by_value = {
+            str(k): v for k, v in (category_by_value or {}).items()
+        }
 
     def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super().create_option(
             name, value, label, selected, index, subindex, attrs
         )
-        raw = getattr(value, "value", value)  # unwrap ModelChoiceIteratorValue
-        try:
-            pk = int(raw)
-        except (TypeError, ValueError):
-            pk = None
-        if pk is not None and pk in self.category_by_pk:
-            option["attrs"]["data-category"] = self.category_by_pk[pk]
+        key = str(getattr(value, "value", value))  # unwrap ModelChoiceIteratorValue
+        if key in self.category_by_value:
+            option["attrs"]["data-category"] = self.category_by_value[key]
         return option
 
 

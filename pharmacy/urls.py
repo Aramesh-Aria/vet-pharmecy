@@ -16,6 +16,7 @@ urlpatterns = [
     path("orders/<int:pk>/", views.OrderDetailView.as_view(), name="order_detail"),
     # Prescriptions & refills
     path("prescriptions/", views.PrescriptionListView.as_view(), name="prescriptions"),
+    path("prescriptions/<int:prescription_id>/order/", views.prescription_add_to_cart, name="prescription_add"),
     path("refill/<int:prescription_id>/", views.refill_request, name="refill_request"),
     path("refills/", views.RefillListView.as_view(), name="refill_list"),
     path("refills/<int:pk>/", views.RefillDetailView.as_view(), name="refill_detail"),

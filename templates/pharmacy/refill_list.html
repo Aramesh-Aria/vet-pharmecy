@@ -24,7 +24,6 @@
                 <span>درخواست #{{ refill.pk|fa_digits }}</span>
                 <span>•</span>
                 <span>تعداد {{ refill.quantity|fa_digits }}</span>
-                {% if refill.price %}<span>•</span><span class="num">{{ refill.price|toman }} ریال</span>{% endif %}
               </div>
             </div>
             <div class="order-card__meta">

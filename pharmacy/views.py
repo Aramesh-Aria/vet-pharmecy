@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, ListView, TemplateView
 
@@ -43,7 +44,13 @@ def cart_add(request, product_id):
         messages.success(request, "به سبد افزوده شد.")
     except ValidationError as exc:
         messages.error(request, exc.messages[0])
-    return redirect(request.POST.get("next") or "pharmacy:cart")
+    # Return to where they were (e.g. the product page) so they can keep shopping.
+    next_url = request.POST.get("next")
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return redirect(next_url)
+    return redirect("pharmacy:cart")
 
 
 @login_required
@@ -141,6 +148,24 @@ def refill_request(request, prescription_id):
         return redirect("pharmacy:prescriptions")
     messages.success(request, "درخواست تکرار نسخه ثبت شد.")
     return redirect(refill.get_absolute_url())
+
+
+@login_required
+@require_POST
+def prescription_add_to_cart(request, prescription_id):
+    """Add a prescribed medication to the cart, up to the doctor's authorised
+    remaining quantity. It's then paid through the normal Order flow."""
+    prescription = get_object_or_404(
+        Prescription, pk=prescription_id, animal__owner=request.user
+    )
+    try:
+        quantity = int(request.POST.get("quantity", 1))
+        services.add_prescription_to_cart(request.user, prescription, quantity)
+    except (ValidationError, ValueError) as exc:
+        messages.error(request, getattr(exc, "messages", ["مقدار نامعتبر"])[0])
+        return redirect("pharmacy:prescriptions")
+    messages.success(request, "داروی نسخه‌ای به سبد افزوده شد.")
+    return redirect("pharmacy:cart")
 
 
 class RefillListView(LoginRequiredMixin, ListView):

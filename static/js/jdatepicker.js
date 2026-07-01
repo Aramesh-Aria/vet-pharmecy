@@ -88,6 +88,11 @@
     pop.className = "jdate__pop"; pop.setAttribute("role", "dialog"); pop.hidden = true;
     root.appendChild(pop);
 
+    // Keep focus on the input while interacting with the popup. Without this the
+    // input blurs on mousedown and the re-render/close races make the month/year
+    // arrows behave as if a date was picked. preventDefault still lets click fire.
+    pop.addEventListener("mousedown", function (e) { e.preventDefault(); });
+
     var today = new Date();
     var view; // {jy, jm}
     var sel = null; // {jy, jm, jd}
@@ -120,9 +125,15 @@
       var startCol = jWeekday(g1);
       var len = monthLen(view.jy, view.jm);
       var html = '<div class="jdate__bar">'
-        + '<button type="button" class="jdate__nav" data-step="-1" aria-label="ماه قبل">›</button>'
+        + '<span class="jdate__navs">'
+        +   '<button type="button" class="jdate__nav" data-y="-1" aria-label="سال قبل">«</button>'
+        +   '<button type="button" class="jdate__nav" data-m="-1" aria-label="ماه قبل">‹</button>'
+        + '</span>'
         + '<span class="jdate__title">' + MONTHS[view.jm - 1] + " " + fa(view.jy) + "</span>"
-        + '<button type="button" class="jdate__nav" data-step="1" aria-label="ماه بعد">‹</button>'
+        + '<span class="jdate__navs">'
+        +   '<button type="button" class="jdate__nav" data-m="1" aria-label="ماه بعد">›</button>'
+        +   '<button type="button" class="jdate__nav" data-y="1" aria-label="سال بعد">»</button>'
+        + '</span>'
         + "</div><div class=\"jdate__grid\">";
       WEEK.forEach(function (w) { html += '<span class="jdate__wd">' + w + "</span>"; });
       for (var i = 0; i < startCol; i++) html += '<span class="jdate__cell jdate__cell--empty"></span>';
@@ -139,7 +150,23 @@
       pop.innerHTML = html;
     }
 
-    function open() { syncFromHidden(); render(); pop.hidden = false; }
+    // Position the popup with fixed coordinates anchored to the input, so it
+    // can't be clipped or hidden by an ancestor's overflow/stacking (this is
+    // what breaks it inside the Django admin change form).
+    function place() {
+      var r = display.getBoundingClientRect();
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      var vw = window.innerWidth || document.documentElement.clientWidth;
+      pop.style.position = "fixed";
+      pop.style.insetInlineStart = "auto";
+      pop.style.insetInlineEnd = "auto";
+      var ph = pop.offsetHeight || 300, pw = pop.offsetWidth || 288;
+      var below = vh - r.bottom;
+      pop.style.top = (below >= ph + 8 || below >= r.top ? r.bottom + 4
+        : Math.max(4, r.top - ph - 4)) + "px";
+      pop.style.left = Math.min(Math.max(4, r.left), vw - pw - 4) + "px";
+    }
+    function open() { syncFromHidden(); render(); pop.hidden = false; place(); }
     function close() { pop.hidden = true; }
     function toggle() { pop.hidden ? open() : close(); }
 
@@ -149,9 +176,14 @@
     if (icon) icon.addEventListener("click", function (e) { e.preventDefault(); toggle(); });
 
     pop.addEventListener("click", function (e) {
-      var nav = e.target.closest("[data-step]");
-      if (nav) {
-        view.jm += +nav.getAttribute("data-step");
+      // Clicks inside the calendar must never bubble to the outside-close handler —
+      // re-rendering detaches the clicked node, so that handler would wrongly close.
+      e.stopPropagation();
+      var y = e.target.closest("[data-y]");
+      if (y) { view.jy += +y.getAttribute("data-y"); render(); return; }
+      var m = e.target.closest("[data-m]");
+      if (m) {
+        view.jm += +m.getAttribute("data-m");
         if (view.jm < 1) { view.jm = 12; view.jy -= 1; }
         if (view.jm > 12) { view.jm = 1; view.jy += 1; }
         render(); return;
@@ -171,6 +203,9 @@
     document.addEventListener("click", function (e) {
       if (!root.contains(e.target)) close();
     });
+    // A fixed popup doesn't follow the page; close on scroll, re-place on resize.
+    window.addEventListener("scroll", function () { if (!pop.hidden) close(); }, true);
+    window.addEventListener("resize", function () { if (!pop.hidden) place(); });
     display.addEventListener("keydown", function (e) {
       if (e.key === "Escape") close();
       if (e.key === "Enter") { e.preventDefault(); toggle(); }

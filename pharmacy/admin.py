@@ -55,9 +55,16 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Prescription)
 class PrescriptionAdmin(admin.ModelAdmin):
-    list_display = ("id", "animal", "product", "issued_by", "issued_at", "is_active")
+    list_display = (
+        "id", "animal", "product", "quantity", "remaining", "issued_by",
+        "issued_at", "is_active",
+    )
     list_filter = ("is_active", "issued_at")
     search_fields = ("animal__name", "product__name", "animal__owner__phone")
+
+    @admin.display(description="باقی‌مانده")
+    def remaining(self, obj):
+        return obj.remaining_quantity
     # `animal` stays autocomplete (owners may have many). `product` is a plain
     # filtered <select>: a prescription is only valid for a «فقط با نسخه» medication,
     # so the dropdown must show *only* those — an autocomplete loads its options from
@@ -91,7 +98,7 @@ class PrescriptionAdmin(admin.ModelAdmin):
             # Tag each option with its category so the JS can hide non-matching
             # medications once the pet is chosen. Validation still enforces it.
             field.widget = CategoryDataSelect(
-                category_by_pk={p.pk: p.animal_category_id for p in qs}
+                category_by_value={p.pk: p.animal_category_id for p in qs}
             )
             field.widget.choices = field.choices
             return field
@@ -100,16 +107,18 @@ class PrescriptionAdmin(admin.ModelAdmin):
 
 @admin.register(RefillRequest)
 class RefillRequestAdmin(admin.ModelAdmin):
-    list_display = ("id", "owner", "prescription", "status", "price", "created_at")
+    list_display = ("id", "owner", "prescription", "quantity", "status",
+                    "allowance_granted", "created_at")
     list_filter = ("status", "created_at")
     search_fields = ("owner__phone", "owner__full_name", "id")
     autocomplete_fields = ("prescription", "owner")
+    readonly_fields = ("allowance_granted", "created_at", "updated_at")
 
     def save_model(self, request, obj, form, change):
-        # Route status/price edits through the service so payment + notifications
-        # fire (approve-then-pay; settle at collection).
-        if change and ("status" in form.changed_data or "price" in form.changed_data):
-            services.set_refill_status(obj, obj.status, price=obj.price)
+        # Route status changes through the service: approving grants the quantity
+        # to the prescription allowance (the Owner then orders via the cart).
+        if change and "status" in form.changed_data:
+            services.set_refill_status(obj, obj.status)
         else:
             super().save_model(request, obj, form, change)
 

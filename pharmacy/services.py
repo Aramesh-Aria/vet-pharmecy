@@ -27,8 +27,41 @@ def add_to_cart(owner, product, quantity: int = 1) -> CartItem:
         raise ValidationError("تعداد نامعتبر است.")
 
     cart = get_cart(owner)
-    item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+    item, created = CartItem.objects.get_or_create(
+        cart=cart, product=product, prescription=None
+    )
     new_qty = quantity if created else item.quantity + quantity
+    if new_qty > product.stock:
+        raise ValidationError("موجودی کافی نیست.")
+    item.quantity = new_qty
+    item.save()
+    return item
+
+
+def add_prescription_to_cart(owner, prescription, quantity: int = 1) -> CartItem:
+    """Add a prescription-only medication to the cart, up to the doctor's
+    authorised remaining quantity. Ordering less than the full amount now leaves
+    the rest available to order later (remaining is recomputed from orders)."""
+    if prescription.owner != owner:
+        raise ValidationError("این نسخه متعلق به شما نیست.")
+    if not prescription.is_active:
+        raise ValidationError("این نسخه فعال نیست.")
+    if quantity < 1:
+        raise ValidationError("تعداد نامعتبر است.")
+
+    product = prescription.product
+    if not product.is_active:
+        raise ValidationError("این دارو در حال حاضر در دسترس نیست.")
+
+    cart = get_cart(owner)
+    item, created = CartItem.objects.get_or_create(
+        cart=cart, product=product, prescription=prescription
+    )
+    new_qty = quantity if created else item.quantity + quantity
+    if new_qty > prescription.remaining_quantity:
+        raise ValidationError(
+            f"بیش از مقدار مجاز نسخه است (باقی‌مانده: {prescription.remaining_quantity})."
+        )
     if new_qty > product.stock:
         raise ValidationError("موجودی کافی نیست.")
     item.quantity = new_qty
@@ -38,12 +71,18 @@ def add_to_cart(owner, product, quantity: int = 1) -> CartItem:
 
 def update_cart_item(owner, product, quantity: int) -> None:
     cart = get_cart(owner)
+    item = cart.items.filter(product=product).first()
+    if item is None:
+        return
     if quantity <= 0:
-        CartItem.objects.filter(cart=cart, product=product).delete()
+        item.delete()
         return
     if quantity > product.stock:
         raise ValidationError("موجودی کافی نیست.")
-    CartItem.objects.filter(cart=cart, product=product).update(quantity=quantity)
+    if item.prescription and quantity > item.prescription.remaining_quantity:
+        raise ValidationError("بیش از مقدار مجاز نسخه است.")
+    item.quantity = quantity
+    item.save()
 
 
 def remove_from_cart(owner, product) -> None:
@@ -72,6 +111,7 @@ def place_order(owner) -> Order:
             product_name=item.product.name,
             unit_price=item.product.price,
             quantity=item.quantity,
+            prescription=item.prescription,
         )
         # Reserve stock.
         item.product.stock -= item.quantity
@@ -131,28 +171,21 @@ def request_refill(owner, prescription: Prescription, quantity: int = 1) -> Refi
 
 
 @transaction.atomic
-def set_refill_status(refill: RefillRequest, new_status: str, price: int | None = None) -> RefillRequest:
-    """Staff transition for a refill. Approving requires a price; once priced it
-    is payable (pay-at-pickup); collection settles the payment."""
-    if price is not None:
-        refill.price = price
-
-    if new_status == RefillRequest.Status.APPROVED and refill.price is None:
-        raise ValidationError("برای تأیید، قیمت را وارد کنید.")
-
+def set_refill_status(refill: RefillRequest, new_status: str) -> RefillRequest:
+    """Staff transition for a refill. Approving grants the refill's quantity to
+    the prescription's allowance (once), so the Owner can order that much more
+    through the normal cart/Order flow. No separate price/payment is involved."""
     refill.status = new_status
-    refill.save()
 
-    if new_status == RefillRequest.Status.APPROVED and refill.price:
-        if payment_for(refill) is None:
-            start_payment(refill, refill.price)
+    if new_status == RefillRequest.Status.APPROVED and not refill.allowance_granted:
+        prescription = refill.prescription
+        prescription.quantity += refill.quantity
+        prescription.save(update_fields=["quantity"])
+        refill.allowance_granted = True
+        refill.save()
         _safe_notify(refill.owner, "refill_approved", refill=refill)
-    elif new_status == RefillRequest.Status.READY:
-        _safe_notify(refill.owner, "refill_ready", refill=refill)
-    elif new_status == RefillRequest.Status.COLLECTED:
-        payment = payment_for(refill)
-        if payment is not None:
-            settle_in_person(payment)
+    else:
+        refill.save()
     return refill
 
 

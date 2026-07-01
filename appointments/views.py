@@ -21,10 +21,12 @@ def request_appointment(request):
     if request.method == "POST":
         form = AppointmentRequestForm(request.POST, owner=request.user)
         if form.is_valid():
+            kind, subject = form.selected_subject
             try:
                 appointment = services.request_appointment(
                     request.user,
-                    animal=form.cleaned_data["animal"],
+                    animal=subject if kind == "animal" else None,
+                    herd=subject if kind == "herd" else None,
                     service=form.cleaned_data["service"],
                     preferred_date=form.cleaned_data["preferred_date"],
                     preferred_time_note=form.cleaned_data["preferred_time_note"],
@@ -47,7 +49,7 @@ class AppointmentListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return Appointment.objects.filter(owner=self.request.user).select_related(
-            "animal", "service"
+            "animal", "herd", "service"
         )
 
 

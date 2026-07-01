@@ -21,7 +21,11 @@
     <div class="form-card reveal" data-delay="1" style="max-width:none">
       <dl class="dl">
         <dt>خدمت</dt><dd>{{ appointment.service.name }}</dd>
-        <dt>حیوان</dt><dd>{{ appointment.animal.name }}</dd>
+        {% if appointment.animal %}
+          <dt>حیوان</dt><dd>{{ appointment.animal.name }}</dd>
+        {% else %}
+          <dt>گله</dt><dd>{{ appointment.herd }}</dd>
+        {% endif %}
         <dt>تاریخ پیشنهادی</dt>
         <dd class="num">{{ appointment.preferred_date|jalali }}{% if appointment.preferred_time_note %} <span style="color:var(--muted)">({{ appointment.preferred_time_note }})</span>{% endif %}</dd>
         {% if appointment.confirmed_datetime %}

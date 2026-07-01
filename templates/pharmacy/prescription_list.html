@@ -43,11 +43,28 @@
             {% endif %}
 
             {% if rx.is_active %}
-              <form method="post" action="{% url 'pharmacy:refill_request' rx.pk %}" class="rx-card__refill">
+              <div class="order-card__meta" style="margin-top:.5rem">
+                <span>قیمت هر واحد: {{ rx.product.price|toman }} ریال</span>
+                <span>•</span>
+                <span>مجاز: {{ rx.quantity|fa_digits }}</span>
+                <span>•</span>
+                <span>باقی‌مانده: {{ rx.remaining_quantity|fa_digits }}</span>
+              </div>
+              {% if rx.is_orderable %}
+                <form method="post" action="{% url 'pharmacy:prescription_add' rx.pk %}" class="rx-card__refill">
+                  {% csrf_token %}
+                  <label class="label" for="qty-{{ rx.pk }}">تعداد</label>
+                  <input id="qty-{{ rx.pk }}" type="number" name="quantity" value="1" min="1" max="{{ rx.remaining_quantity }}" data-qty aria-label="تعداد">
+                  <button type="submit" class="btn btn--primary btn--sm">افزودن به سبد</button>
+                </form>
+                <p class="order-card__meta" style="margin-top:.3rem;color:var(--muted)">می‌توانید کمتر از مقدار مجاز سفارش دهید و باقی را بعداً تهیه کنید.</p>
+              {% elif rx.remaining_quantity == 0 %}
+                <p class="order-card__meta" style="margin-top:.5rem">همهٔ مقدار مجاز این نسخه سفارش داده شده است.</p>
+              {% endif %}
+              <form method="post" action="{% url 'pharmacy:refill_request' rx.pk %}" style="margin-top:.6rem">
                 {% csrf_token %}
-                <label class="label" for="qty-{{ rx.pk }}">تعداد</label>
-                <input id="qty-{{ rx.pk }}" type="number" name="quantity" value="1" min="1" data-qty aria-label="تعداد">
-                <button type="submit" class="btn btn--primary btn--sm">درخواست تکرار</button>
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn btn--ghost btn--sm">درخواست تکرار نسخه</button>
               </form>
             {% endif %}
           </div>

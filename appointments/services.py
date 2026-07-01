@@ -8,13 +8,15 @@ from django.core.exceptions import ValidationError
 from .models import Appointment
 
 
-def request_appointment(owner, *, animal, service, preferred_date,
+def request_appointment(owner, *, animal=None, herd=None, service, preferred_date,
                         preferred_time_note="", owner_note="") -> Appointment:
-    if animal is None or animal.owner_id != owner.pk:
-        raise ValidationError("حیوان انتخاب‌شده متعلق به شما نیست.")
+    subject = animal or herd
+    if subject is None or subject.owner_id != owner.pk:
+        raise ValidationError("مورد انتخاب‌شده متعلق به شما نیست.")
     appointment = Appointment(
         owner=owner,
         animal=animal,
+        herd=herd,
         service=service,
         preferred_date=preferred_date,
         preferred_time_note=preferred_time_note,

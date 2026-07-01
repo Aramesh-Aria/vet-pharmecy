@@ -23,7 +23,7 @@
             <div>
               <div class="order-card__id" style="font-size:1.1rem">{{ appt.service.name }}</div>
               <div class="order-card__meta">
-                <span>برای {{ appt.animal.name }}</span>
+                <span>برای {% if appt.animal %}{{ appt.animal.name }}{% else %}{{ appt.herd }}{% endif %}</span>
                 {% if appt.confirmed_datetime %}<span>•</span><span class="num">{{ appt.confirmed_datetime|jalali:"%Y/%m/%d ساعت %H:%M" }}</span>
                 {% elif appt.preferred_date %}<span>•</span><span class="num">پیشنهادی: {{ appt.preferred_date|jalali }}</span>{% endif %}
               </div>
