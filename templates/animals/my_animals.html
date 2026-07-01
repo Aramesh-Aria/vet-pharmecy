@@ -1,36 +1,70 @@
 {% extends "base.html" %}
+{% load persian %}
 {% block title %}حیوانات من{% endblock %}
+
 {% block content %}
-  <h1>حیوانات من</h1>
+<section class="section">
+  <div class="wrap" style="max-width:60rem">
+    <div class="section__head reveal">
+      <p class="eyebrow">حساب من</p>
+      <h1 class="title">حیوانات من</h1>
+      <p class="lede">حیوانات و گله‌های خود را اینجا مدیریت کنید.</p>
+    </div>
 
-  <section>
-    <h2>حیوانات</h2>
-    <p><a href="{% url 'animals:create' %}">+ افزودن حیوان</a></p>
-    {% if animals %}
-      <ul>
-        {% for animal in animals %}
-          <li>
-            <a href="{{ animal.get_absolute_url }}">{{ animal.name }}</a>
-            — {{ animal.species }} ({{ animal.animal_category }})
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>هنوز حیوانی ثبت نکرده‌اید.</p>
-    {% endif %}
-  </section>
+    <div class="subsection reveal" style="margin-top:0">
+      <div class="head-row">
+        <h2 class="subsection__title" style="margin:0">حیوانات</h2>
+        <a class="btn btn--primary btn--sm" href="{% url 'animals:create' %}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          افزودن حیوان
+        </a>
+      </div>
+      {% if animals %}
+        <div class="entity-grid">
+          {% for animal in animals %}
+            <a class="entity-card" href="{{ animal.get_absolute_url }}">
+              <span class="entity-card__avatar">
+                {% if animal.photo %}<img src="{{ animal.photo.url }}" alt="{{ animal.name }}" loading="lazy">
+                {% else %}<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M5 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/></svg>{% endif %}
+              </span>
+              <span>
+                <span class="entity-card__name">{{ animal.name }}</span>
+                <span class="entity-card__meta" style="display:block">{{ animal.species }} • {{ animal.animal_category }}</span>
+              </span>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty--inline">هنوز حیوانی ثبت نکرده‌اید. با دکمهٔ «افزودن حیوان» شروع کنید.</div>
+      {% endif %}
+    </div>
 
-  <section>
-    <h2>گله‌ها (دام)</h2>
-    <p><a href="{% url 'animals:herd_create' %}">+ افزودن گله</a></p>
-    {% if herds %}
-      <ul>
-        {% for herd in herds %}
-          <li><a href="{{ herd.get_absolute_url }}">{{ herd }}</a></li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>هنوز گله‌ای ثبت نکرده‌اید.</p>
-    {% endif %}
-  </section>
+    <div class="subsection reveal">
+      <div class="head-row">
+        <h2 class="subsection__title" style="margin:0">گله‌ها (دام)</h2>
+        <a class="btn btn--ghost btn--sm" href="{% url 'animals:herd_create' %}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          افزودن گله
+        </a>
+      </div>
+      {% if herds %}
+        <div class="entity-grid">
+          {% for herd in herds %}
+            <a class="entity-card" href="{{ herd.get_absolute_url }}">
+              <span class="entity-card__avatar">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12a3 3 0 1 0 0-6M20 12a3 3 0 1 1 0-6M7 13c0-2 2-3.5 5-3.5s5 1.5 5 3.5v2H7v-2Z"/><path d="M9 19v-2M15 19v-2"/></svg>
+              </span>
+              <span>
+                <span class="entity-card__name">{{ herd }}</span>
+                <span class="entity-card__meta" style="display:block">{{ herd.head_count|fa_digits }} رأس • {{ herd.animal_category }}</span>
+              </span>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty--inline">هنوز گله‌ای ثبت نکرده‌اید. دام‌ها به‌صورت گروهی (گله) ثبت می‌شوند.</div>
+      {% endif %}
+    </div>
+  </div>
+</section>
 {% endblock %}

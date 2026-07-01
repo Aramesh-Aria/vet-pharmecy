@@ -6,6 +6,23 @@ from catalog.models import AnimalCategory, Product, Section, Service
 
 
 @pytest.mark.django_db
+def test_seed_data_creates_catalog_without_users():
+    from django.core.management import call_command
+
+    from accounts.models import User
+
+    call_command("seed_data")
+    assert Product.objects.count() > 0
+    assert Service.objects.count() > 0
+    assert User.objects.count() == 0  # no customers/superuser created
+
+    # Idempotent: a second run creates no duplicates.
+    before = Product.objects.count()
+    call_command("seed_data")
+    assert Product.objects.count() == before
+
+
+@pytest.mark.django_db
 def test_four_categories_seeded():
     slugs = set(AnimalCategory.objects.values_list("slug", flat=True))
     assert {"ornamental-birds", "companion-pets", "equine", "ruminants"} <= slugs

@@ -1,21 +1,50 @@
 {% extends "base.html" %}
 {% load persian %}
 {% block title %}نوبت‌های من{% endblock %}
+
 {% block content %}
-  <h1>نوبت‌های من</h1>
-  <p><a href="{% url 'appointments:request' %}">+ درخواست نوبت جدید</a></p>
-  {% if appointments %}
-    <ul>
-      {% for appt in appointments %}
-        <li>
-          <a href="{{ appt.get_absolute_url }}">نوبت #{{ appt.pk|fa_digits }}</a>
-          — {{ appt.service.name }} برای {{ appt.animal.name }}
-          — {{ appt.get_status_display }}
-          {% if appt.confirmed_datetime %}— {{ appt.confirmed_datetime|jalali:"%Y/%m/%d %H:%M" }}{% endif %}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>نوبتی ثبت نکرده‌اید.</p>
-  {% endif %}
+<section class="section">
+  <div class="wrap" style="max-width:54rem">
+    <div class="head-row reveal">
+      <div>
+        <p class="eyebrow" style="margin-bottom:.4rem">حساب من</p>
+        <h1 class="title" style="margin:0">نوبت‌های من</h1>
+      </div>
+      <a class="btn btn--primary btn--sm" href="{% url 'appointments:request' %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        درخواست نوبت جدید
+      </a>
+    </div>
+
+    {% if appointments %}
+      <div class="order-cards">
+        {% for appt in appointments %}
+          <a class="order-card" href="{{ appt.get_absolute_url }}">
+            <div>
+              <div class="order-card__id" style="font-size:1.1rem">{{ appt.service.name }}</div>
+              <div class="order-card__meta">
+                <span>برای {{ appt.animal.name }}</span>
+                {% if appt.confirmed_datetime %}<span>•</span><span class="num">{{ appt.confirmed_datetime|jalali:"%Y/%m/%d ساعت %H:%M" }}</span>
+                {% elif appt.preferred_date %}<span>•</span><span class="num">پیشنهادی: {{ appt.preferred_date|jalali }}</span>{% endif %}
+              </div>
+            </div>
+            <div class="order-card__meta">
+              {% include "partials/appointment_status.html" %}
+              <span class="order-card__go">جزئیات
+                <svg class="arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+              </span>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty reveal">
+        <svg class="empty__art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+        <p class="empty__title">نوبتی ثبت نکرده‌اید</p>
+        <p>برای ویزیت حضوری حیوانتان، یک درخواست نوبت ثبت کنید.</p>
+        <a class="btn btn--primary" style="margin-top:1.2rem" href="{% url 'appointments:request' %}">درخواست نوبت</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}

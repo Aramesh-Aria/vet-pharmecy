@@ -9,16 +9,17 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from .constants import Province
 from .managers import UserManager
-from .validators import validate_phone
+from .validators import validate_phone, validate_postal_code
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     """A login account, identified by mobile phone number."""
 
     class Role(models.TextChoices):
-        OWNER = "owner", _("مالک")
-        STAFF = "staff", _("کارمند")
+        OWNER = "owner", _("مشتری")
+        STAFF = "staff", _("همکار")
 
     phone = models.CharField(
         _("شماره موبایل"),
@@ -108,14 +109,36 @@ class OwnerProfile(models.Model):
         related_name="owner_profile",
         verbose_name=_("کاربر"),
     )
+    province = models.CharField(
+        _("استان"), max_length=30, blank=True, choices=Province.choices
+    )
+    city = models.CharField(_("شهر"), max_length=80, blank=True)
     address = models.TextField(_("نشانی"), blank=True)
+    postal_code = models.CharField(
+        _("کد پستی"),
+        max_length=10,
+        blank=True,
+        validators=[validate_postal_code],
+        help_text=_("۱۰ رقم — برای ارسال سفارش‌ها در آینده."),
+    )
     notify_by_sms = models.BooleanField(_("اطلاع‌رسانی پیامکی"), default=True)
     notify_by_email = models.BooleanField(_("اطلاع‌رسانی ایمیلی"), default=False)
     created_at = models.DateTimeField(_("ایجاد"), auto_now_add=True)
 
     class Meta:
-        verbose_name = _("پروفایل مالک")
-        verbose_name_plural = _("پروفایل‌های مالکان")
+        verbose_name = _("پروفایل مشتری")
+        verbose_name_plural = _("پروفایل‌های مشتریان")
 
     def __str__(self):
         return f"پروفایل {self.user}"
+
+    @property
+    def is_complete(self) -> bool:
+        """Enough info to deliver to and contact the owner."""
+        return bool(
+            self.user.full_name
+            and self.province
+            and self.city
+            and self.address
+            and self.postal_code
+        )

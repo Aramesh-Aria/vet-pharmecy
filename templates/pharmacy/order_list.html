@@ -1,18 +1,44 @@
 {% extends "base.html" %}
 {% load persian %}
 {% block title %}سفارش‌های من{% endblock %}
+
 {% block content %}
-  <h1>سفارش‌های من</h1>
-  {% if orders %}
-    <ul>
-      {% for order in orders %}
-        <li>
-          <a href="{{ order.get_absolute_url }}">سفارش #{{ order.pk|fa_digits }}</a>
-          — {{ order.get_status_display }} — {{ order.created_at|jalali }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>هنوز سفارشی ثبت نکرده‌اید.</p>
-  {% endif %}
+<section class="section">
+  <div class="wrap" style="max-width:54rem">
+    <div class="section__head reveal">
+      <p class="eyebrow">حساب من</p>
+      <h1 class="title">سفارش‌های من</h1>
+    </div>
+
+    {% if orders %}
+      <div class="order-cards">
+        {% for order in orders %}
+          <a class="order-card reveal" href="{{ order.get_absolute_url }}">
+            <div>
+              <div class="order-card__id">سفارش #{{ order.pk|fa_digits }}</div>
+              <div class="order-card__meta">
+                <span>{{ order.created_at|jalali }}</span>
+                <span>•</span>
+                <span class="num">{{ order.total|toman }} ریال</span>
+              </div>
+            </div>
+            <div class="order-card__meta">
+              {% include "partials/order_status.html" %}
+              <span class="order-card__go">جزئیات
+                <svg class="arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+              </span>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty reveal">
+        <svg class="empty__art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M5 7h14l-1 13H6L5 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+        <p class="empty__title">هنوز سفارشی ثبت نکرده‌اید</p>
+        <p>برای خرید دارو یا تجهیزات، دستهٔ جانورتان را انتخاب کنید.</p>
+        <a class="btn btn--primary" style="margin-top:1.2rem" href="{% url 'pages:home' %}">مشاهدهٔ دسته‌ها</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}

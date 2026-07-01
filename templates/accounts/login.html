@@ -1,24 +1,36 @@
 {% extends "base.html" %}
 {% block title %}ورود{% endblock %}
+
 {% block content %}
-  <h1>ورود</h1>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    <p>
-      <label for="{{ form.username.id_for_label }}">شماره موبایل</label><br>
-      {{ form.username }}
-      {{ form.username.errors }}
+<section class="auth">
+  <div class="auth__card reveal">
+    <div class="auth__brand">{% include "partials/brand_mark.svg" %}</div>
+    <div class="auth__head">
+      <h1 class="auth__title">ورود به هیرکان</h1>
+      <p class="auth__sub">با شمارهٔ موبایل و گذرواژه وارد شوید.</p>
+    </div>
+
+    <form method="post" novalidate class="form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form__error">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="field">
+        <label for="{{ form.username.id_for_label }}">شماره موبایل</label>
+        {{ form.username }}
+        {{ form.username.errors }}
+      </div>
+      <div class="field">
+        <label for="{{ form.password.id_for_label }}">گذرواژه</label>
+        {{ form.password }}
+        {{ form.password.errors }}
+      </div>
+      <button type="submit" class="btn btn--primary btn--block">ورود</button>
+    </form>
+
+    <p class="auth__alt">
+      <a href="{% url 'accounts:reset' %}">گذرواژه را فراموش کرده‌اید؟</a>
     </p>
-    <p>
-      <label for="{{ form.password.id_for_label }}">گذرواژه</label><br>
-      {{ form.password }}
-      {{ form.password.errors }}
-    </p>
-    <button type="submit">ورود</button>
-  </form>
-  <p>
-    <a href="{% url 'accounts:register' %}">ثبت‌نام</a> ·
-    <a href="{% url 'accounts:reset' %}">فراموشی گذرواژه</a>
-  </p>
+    <div class="auth__divider">یا</div>
+    <a class="btn btn--ghost btn--block" href="{% url 'accounts:register' %}">ساخت حساب جدید</a>
+  </div>
+</section>
 {% endblock %}

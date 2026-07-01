@@ -37,7 +37,12 @@ class Payment(models.Model):
     ref_id = models.CharField(_("کد پیگیری"), max_length=255, blank=True)
 
     created_at = models.DateTimeField(_("ایجاد"), auto_now_add=True)
-    paid_at = models.DateTimeField(_("زمان پرداخت"), null=True, blank=True)
+    paid_at = models.DateTimeField(
+        _("زمان پرداخت"),
+        null=True,
+        blank=True,
+        help_text=_("به‌صورت خودکار هنگام موفقیت پرداخت ثبت می‌شود."),
+    )
 
     class Meta:
         verbose_name = _("پرداخت")

@@ -1,19 +1,49 @@
 {% extends "base.html" %}
 {% load persian %}
 {% block title %}درخواست‌های تکرار نسخه{% endblock %}
+
 {% block content %}
-  <p><a href="{% url 'pharmacy:prescriptions' %}">→ نسخه‌های من</a></p>
-  <h1>درخواست‌های تکرار نسخه</h1>
-  {% if refills %}
-    <ul>
-      {% for refill in refills %}
-        <li>
-          <a href="{{ refill.get_absolute_url }}">#{{ refill.pk|fa_digits }}</a>
-          — {{ refill.prescription.product.name }} — {{ refill.get_status_display }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>درخواستی ثبت نشده است.</p>
-  {% endif %}
+<section class="section">
+  <div class="wrap" style="max-width:54rem">
+    <nav class="crumbs reveal" aria-label="مسیر">
+      <a href="{% url 'pharmacy:prescriptions' %}">نسخه‌های من</a><span class="sep">/</span>
+      <span>درخواست‌های تکرار</span>
+    </nav>
+    <div class="section__head reveal">
+      <p class="eyebrow">حساب من</p>
+      <h1 class="title">درخواست‌های تکرار نسخه</h1>
+    </div>
+
+    {% if refills %}
+      <div class="order-cards">
+        {% for refill in refills %}
+          <a class="order-card" href="{{ refill.get_absolute_url }}">
+            <div>
+              <div class="order-card__id" style="font-size:1.1rem">{{ refill.prescription.product.name }}</div>
+              <div class="order-card__meta">
+                <span>درخواست #{{ refill.pk|fa_digits }}</span>
+                <span>•</span>
+                <span>تعداد {{ refill.quantity|fa_digits }}</span>
+                {% if refill.price %}<span>•</span><span class="num">{{ refill.price|toman }} ریال</span>{% endif %}
+              </div>
+            </div>
+            <div class="order-card__meta">
+              {% include "partials/refill_status.html" %}
+              <span class="order-card__go">جزئیات
+                <svg class="arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+              </span>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty reveal">
+        <svg class="empty__art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 12a8 8 0 0 1 14-5.3L21 9M20 12a8 8 0 0 1-14 5.3L3 15"/><path d="M21 4v5h-5M3 20v-5h5"/></svg>
+        <p class="empty__title">درخواستی ثبت نشده است</p>
+        <p>از صفحهٔ «نسخه‌های من» می‌توانید برای داروهای فعال، درخواست تکرار ثبت کنید.</p>
+        <a class="btn btn--primary" style="margin-top:1.2rem" href="{% url 'pharmacy:prescriptions' %}">نسخه‌های من</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}

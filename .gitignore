@@ -28,3 +28,4 @@ db.sqlite3-journal
 *.swp
 .idea/
 .vscode/
+.claude/launch.json

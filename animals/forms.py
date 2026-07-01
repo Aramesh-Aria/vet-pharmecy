@@ -1,6 +1,7 @@
 from django import forms
 
 from catalog.models import AnimalCategory
+from core.widgets import JalaliDateInput, PrettyImageInput
 
 from .models import Animal, Herd
 
@@ -16,7 +17,7 @@ class AnimalForm(forms.ModelForm):
             "name", "animal_category", "species", "sex",
             "birth_date", "weight_kg", "photo",
         ]
-        widgets = {"birth_date": forms.DateInput(attrs={"type": "date"})}
+        widgets = {"birth_date": JalaliDateInput(), "photo": PrettyImageInput()}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

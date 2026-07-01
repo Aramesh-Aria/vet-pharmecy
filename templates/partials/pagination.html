@@ -1,0 +1,35 @@
+{% comment %}
+Pagination control. Expects: page_obj, page_range, base_qs (querystring w/o `page`),
+hx_target, hx_select. RTL: page numbers flow right→left; «قبلی» sits on the right.
+{% endcomment %}
+{% load persian %}
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="pager" aria-label="صفحه‌بندی">
+  {% if page_obj.has_previous %}
+    <a class="pager__nav" aria-label="صفحهٔ قبل"
+       href="?{{ base_qs }}{% if base_qs %}&{% endif %}page={{ page_obj.previous_page_number }}"
+       hx-get="?{{ base_qs }}{% if base_qs %}&{% endif %}page={{ page_obj.previous_page_number }}"
+       hx-target="{{ hx_target }}" hx-select="{{ hx_select }}" hx-swap="outerHTML" hx-push-url="true">‹</a>
+  {% else %}<span class="pager__nav is-disabled" aria-hidden="true">‹</span>{% endif %}
+
+  {% for num in page_range %}
+    {% if num == page_obj.paginator.ELLIPSIS %}
+      <span class="pager__gap">…</span>
+    {% elif num == page_obj.number %}
+      <span class="pager__page is-current" aria-current="page">{{ num|fa_digits }}</span>
+    {% else %}
+      <a class="pager__page"
+         href="?{{ base_qs }}{% if base_qs %}&{% endif %}page={{ num }}"
+         hx-get="?{{ base_qs }}{% if base_qs %}&{% endif %}page={{ num }}"
+         hx-target="{{ hx_target }}" hx-select="{{ hx_select }}" hx-swap="outerHTML" hx-push-url="true">{{ num|fa_digits }}</a>
+    {% endif %}
+  {% endfor %}
+
+  {% if page_obj.has_next %}
+    <a class="pager__nav" aria-label="صفحهٔ بعد"
+       href="?{{ base_qs }}{% if base_qs %}&{% endif %}page={{ page_obj.next_page_number }}"
+       hx-get="?{{ base_qs }}{% if base_qs %}&{% endif %}page={{ page_obj.next_page_number }}"
+       hx-target="{{ hx_target }}" hx-select="{{ hx_select }}" hx-swap="outerHTML" hx-push-url="true">›</a>
+  {% else %}<span class="pager__nav is-disabled" aria-hidden="true">›</span>{% endif %}
+</nav>
+{% endif %}

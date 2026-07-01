@@ -1,38 +1,88 @@
 {% extends "base.html" %}
-{% load persian %}
+{% load static persian %}
 {% block title %}سبد خرید{% endblock %}
+
 {% block content %}
-  <h1>سبد خرید</h1>
-  {% if cart.items.all %}
-    <table>
-      <thead><tr><th>کالا</th><th>تعداد</th><th>قیمت</th><th></th></tr></thead>
-      <tbody>
-        {% for item in cart.items.all %}
-          <tr>
-            <td>{{ item.product.name }}</td>
-            <td>
-              <form method="post" action="{% url 'pharmacy:cart_update' item.product.pk %}" style="display:inline">
-                {% csrf_token %}
-                <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.product.stock }}" style="width:4rem">
-                <button type="submit">به‌روزرسانی</button>
-              </form>
-            </td>
-            <td>{{ item.line_total|toman }} ریال</td>
-            <td>
-              <form method="post" action="{% url 'pharmacy:cart_remove' item.product.pk %}" style="display:inline">
-                {% csrf_token %}<button type="submit">حذف</button>
-              </form>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <p><strong>جمع کل: {{ cart.total|toman }} ریال</strong></p>
-    <form method="post" action="{% url 'pharmacy:checkout' %}">
-      {% csrf_token %}
-      <button type="submit">ثبت سفارش (پرداخت هنگام تحویل)</button>
-    </form>
-  {% else %}
-    <p>سبد خرید شما خالی است.</p>
-  {% endif %}
+<section class="section">
+  <div class="wrap" style="max-width:54rem">
+    <div class="section__head reveal">
+      <p class="eyebrow">سفارش شما</p>
+      <h1 class="title">سبد خرید</h1>
+    </div>
+
+    {% if cart.items.all %}
+      <div class="cart reveal">
+        <table>
+          <thead>
+            <tr><th>کالا</th><th>تعداد</th><th>قیمت</th><th><span class="sr-only">حذف</span></th></tr>
+          </thead>
+          <tbody>
+            {% for item in cart.items.all %}
+              <tr>
+                <td class="cart__product">{{ item.product.name }}</td>
+                <td>
+                  <form method="post" action="{% url 'pharmacy:cart_update' item.product.pk %}" style="display:inline-flex;gap:.5rem;align-items:center">
+                    {% csrf_token %}
+                    <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.product.stock }}" data-qty aria-label="تعداد {{ item.product.name }}">
+                    <button type="submit" class="btn btn--ghost btn--sm">به‌روزرسانی</button>
+                  </form>
+                </td>
+                <td class="num">{{ item.line_total|toman }} <span class="unit" style="color:var(--muted);font-size:.82rem">ریال</span></td>
+                <td style="text-align:end">
+                  <form method="post" action="{% url 'pharmacy:cart_remove' item.product.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="icon-btn" aria-label="حذف {{ item.product.name }}">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="cart__foot">
+          <span class="cart__total">جمع کل: {{ cart.total|toman }} <span class="unit">ریال</span></span>
+          {% if profile_complete %}
+            <form method="post" action="{% url 'pharmacy:checkout' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn--primary">ثبت سفارش</button>
+            </form>
+          {% else %}
+            <a class="btn btn--primary" href="{% url 'accounts:profile' %}">تکمیل پروفایل برای ثبت سفارش</a>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if not profile_complete %}
+        <div class="notice reveal" style="margin-top:1.2rem">
+          <span class="notice__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+          </span>
+          <div>
+            <strong>پروفایل شما کامل نیست.</strong>
+            <p style="margin:.2rem 0 0;color:var(--muted)">برای ثبت سفارش، استان، شهر، نشانی و کد پستی خود را در <a href="{% url 'accounts:profile' %}">پروفایل</a> وارد کنید.</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="notice notice--pickup reveal" style="margin-top:1.2rem">
+        <span class="notice__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 9h13v8H3zM16 12h3l2 3v2h-5"/><circle cx="7" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg>
+        </span>
+        <div>
+          <strong>پرداخت هنگام تحویل.</strong>
+          <p style="margin:.2rem 0 0;color:var(--muted)">سفارش را آنلاین ثبت کنید و مبلغ را هنگام دریافت در داروخانه بپردازید. پرداخت اینترنتی به‌زودی افزوده می‌شود.</p>
+        </div>
+      </div>
+
+    {% else %}
+      <div class="empty reveal">
+        <svg class="empty__art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M6 6h15l-1.5 9h-12L6 6Z"/><path d="M6 6 5 3H3"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
+        <p class="empty__title">سبد خرید شما خالی است</p>
+        <p>همهٔ داروها و تجهیزات فروشگاه را ببینید و با فیلترها آنچه می‌خواهید را پیدا کنید.</p>
+        <a class="btn btn--primary" style="margin-top:1.2rem" href="{% url 'catalog:products' %}">مشاهدهٔ همهٔ محصولات</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}

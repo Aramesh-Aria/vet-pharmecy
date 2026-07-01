@@ -1,16 +1,57 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}{{ category.name }}{% endblock %}
-{% block content %}
-  <p><a href="{% url 'pages:home' %}">→ خانه</a></p>
-  <h1>{{ category.name }}</h1>
-  {% if category.description %}<p>{{ category.description }}</p>{% endif %}
 
-  <h2>بخش‌ها</h2>
-  <ul>
-    {% for value, label in sections %}
-      <li>
-        <a href="{% url 'catalog:section' category.slug value %}">{{ label }}</a>
-      </li>
-    {% endfor %}
-  </ul>
+{% block content %}
+<section class="section">
+  <div class="wrap">
+    <nav class="crumbs reveal" aria-label="مسیر">
+      <a href="{% url 'pages:home' %}">خانه</a><span class="sep">/</span>
+      <span>{{ category.name }}</span>
+    </nav>
+
+    <div class="section__head reveal">
+      <p class="eyebrow">دستهٔ جانور</p>
+      <h1 class="title">{{ category.name }}</h1>
+      {% if category.description %}<p class="lede">{{ category.description }}</p>
+      {% else %}<p class="lede">یکی از بخش‌های زیر را برای ادامه انتخاب کنید.</p>{% endif %}
+    </div>
+
+    <div class="sections-grid">
+      {% for value, label in sections %}
+        {% if value == "online_visit" %}
+          <div class="scard scard--soon reveal" data-delay="1" aria-disabled="true">
+            <span class="scard__icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="14" height="12" rx="2"/><path d="m17 9 4-2v8l-4-2"/></svg>
+            </span>
+            <span class="badge badge--rx" style="align-self:flex-start">به‌زودی</span>
+            <h2 class="scard__title">{{ label }}</h2>
+            <p class="scard__desc">ویزیت آنلاین پس از فعال‌سازی پرداخت اینترنتی در دسترس قرار می‌گیرد.</p>
+          </div>
+        {% else %}
+          <a class="scard reveal" data-delay="{{ forloop.counter }}" href="{% url 'catalog:section' category.slug value %}">
+            <span class="scard__icon">
+              {% if value == "medication" %}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10.5 3.5 3.5 10.5a4 4 0 0 0 0 5.6l4.4 4.4a4 4 0 0 0 5.6 0l7-7a4 4 0 0 0 0-5.6l-4.4-4.4a4 4 0 0 0-5.6 0Z"/><path d="M7 7l10 10"/></svg>
+              {% elif value == "equipment" %}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.1-.6-.6-2.1 2.4-2.4Z"/></svg>
+              {% else %}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-7-10a7 7 0 0 1 14 0c0 5.5-7 10-7 10Z"/><path d="M9.5 11h5M12 8.5v5"/></svg>
+              {% endif %}
+            </span>
+            <h2 class="scard__title">{{ label }}</h2>
+            <p class="scard__desc">
+              {% if value == "medication" %}دارو و مکمل‌های تخصصی این جانور.
+              {% elif value == "equipment" %}تجهیزات، لوازم و وسایل نگه‌داری.
+              {% else %}خدمات درمانی و درخواست نوبت.{% endif %}
+            </p>
+            <span class="specimen__go">مشاهده
+              <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+            </span>
+          </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
 {% endblock %}

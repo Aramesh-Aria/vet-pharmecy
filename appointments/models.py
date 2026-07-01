@@ -26,7 +26,7 @@ class Appointment(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="appointments",
-        verbose_name=_("مالک"),
+        verbose_name=_("مشتری"),
     )
     animal = models.ForeignKey(
         "animals.Animal",
@@ -51,7 +51,7 @@ class Appointment(models.Model):
         _("بازهٔ زمانی پیشنهادی"), max_length=100, blank=True,
         help_text=_("مثلاً «صبح» یا «بعدازظهر»"),
     )
-    owner_note = models.TextField(_("توضیح مالک"), blank=True)
+    owner_note = models.TextField(_("توضیح مشتری"), blank=True)
 
     confirmed_datetime = models.DateTimeField(_("زمان تأییدشده"), null=True, blank=True)
     vet = models.ForeignKey(
@@ -62,7 +62,7 @@ class Appointment(models.Model):
         blank=True,
         verbose_name=_("دامپزشک"),
     )
-    staff_note = models.TextField(_("یادداشت کارمند"), blank=True)
+    staff_note = models.TextField(_("یادداشت همکار"), blank=True)
     status = models.CharField(
         _("وضعیت"), max_length=12, choices=Status.choices, default=Status.REQUESTED
     )

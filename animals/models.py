@@ -28,7 +28,7 @@ class Animal(ImageProcessingMixin, models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="animals",
-        verbose_name=_("مالک"),
+        verbose_name=_("مشتری"),
     )
     animal_category = models.ForeignKey(
         "catalog.AnimalCategory",
@@ -69,7 +69,7 @@ class Herd(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="herds",
-        verbose_name=_("مالک"),
+        verbose_name=_("مشتری"),
     )
     animal_category = models.ForeignKey(
         "catalog.AnimalCategory",

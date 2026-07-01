@@ -1,17 +1,27 @@
 {% extends "base.html" %}
 {% block title %}بازیابی گذرواژه{% endblock %}
+
 {% block content %}
-  <h1>بازیابی گذرواژه</h1>
-  <p>شماره موبایل خود را وارد کنید تا کد بازیابی برایتان ارسال شود.</p>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    <p>
-      <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label><br>
-      {{ form.phone }}
-      {{ form.phone.errors }}
-    </p>
-    <button type="submit">ارسال کد</button>
-  </form>
-  <p><a href="{% url 'accounts:login' %}">بازگشت به ورود</a></p>
+<section class="auth">
+  <div class="auth__card reveal">
+    <div class="auth__brand">{% include "partials/brand_mark.svg" %}</div>
+    <div class="auth__head">
+      <h1 class="auth__title">بازیابی گذرواژه</h1>
+      <p class="auth__sub">شماره موبایل خود را وارد کنید تا کد بازیابی برایتان ارسال شود.</p>
+    </div>
+
+    <form method="post" novalidate class="form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form__error">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="field">
+        <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+        {{ form.phone }}
+        {{ form.phone.errors }}
+      </div>
+      <button type="submit" class="btn btn--primary btn--block">ارسال کد</button>
+    </form>
+
+    <p class="auth__alt"><a href="{% url 'accounts:login' %}">بازگشت به ورود</a></p>
+  </div>
+</section>
 {% endblock %}

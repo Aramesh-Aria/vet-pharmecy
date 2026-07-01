@@ -1,20 +1,33 @@
 {% extends "base.html" %}
+{% load persian %}
 {% block title %}تأیید شماره{% endblock %}
+
 {% block content %}
-  <h1>تأیید شماره موبایل</h1>
-  <p>کد تأیید به شمارهٔ {{ phone }} ارسال شد.</p>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    <p>
-      <label for="{{ form.code.id_for_label }}">{{ form.code.label }}</label><br>
-      {{ form.code }}
-      {{ form.code.errors }}
-    </p>
-    <button type="submit">تأیید</button>
-  </form>
-  <form method="post" action="{% url 'accounts:register_resend' %}">
-    {% csrf_token %}
-    <button type="submit">ارسال مجدد کد</button>
-  </form>
+<section class="auth">
+  <div class="auth__card reveal">
+    <div class="auth__brand">{% include "partials/brand_mark.svg" %}</div>
+    <div class="auth__head">
+      <h1 class="auth__title">تأیید شماره</h1>
+      <p class="auth__sub">کد تأیید به شمارهٔ <span class="num" dir="ltr">{{ phone|fa_digits }}</span> ارسال شد.</p>
+    </div>
+
+    <form method="post" novalidate class="form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form__error">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="field field--otp">
+        <label for="{{ form.code.id_for_label }}">{{ form.code.label }}</label>
+        {{ form.code }}
+        {{ form.code.errors }}
+      </div>
+      <button type="submit" class="btn btn--primary btn--block">تأیید</button>
+    </form>
+
+    <div class="auth__resend">
+      <form method="post" action="{% url 'accounts:register_resend' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn--ghost btn--sm">ارسال مجدد کد</button>
+      </form>
+    </div>
+  </div>
+</section>
 {% endblock %}

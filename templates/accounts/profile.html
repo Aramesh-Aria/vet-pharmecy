@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load persian %}
+{% block title %}پروفایل من{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap" style="max-width:42rem">
+    <div class="section__head reveal">
+      <p class="eyebrow">حساب من</p>
+      <h1 class="title">پروفایل من</h1>
+      <p class="lede">اطلاعات حساب و راه‌های تماس خود را اینجا ببینید و ویرایش کنید.</p>
+    </div>
+
+    <div class="form-card reveal">
+      <form method="post" novalidate class="form">
+        {% csrf_token %}
+
+        <div class="field">
+          <span class="label">شماره موبایل</span>
+          <div class="readonly-field">
+            <span class="num" dir="ltr">{{ user.phone|fa_digits }}</span>
+            {% if user.phone_verified %}<span class="badge badge--stock badge--dot">تأییدشده</span>{% endif %}
+          </div>
+          <span class="helptext">شماره موبایل، شناسهٔ ورود شماست و قابل تغییر نیست.</span>
+        </div>
+
+        {% if form.non_field_errors %}<div class="form__error">{{ form.non_field_errors }}</div>{% endif %}
+
+        <div class="field">
+          <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+          {{ form.full_name }}
+          {{ form.full_name.errors }}
+        </div>
+        <div class="field">
+          <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+          {{ form.email }}
+          {{ form.email.errors }}
+        </div>
+        <div class="field">
+          <label for="{{ profile_form.province.id_for_label }}">{{ profile_form.province.label }}</label>
+          {{ profile_form.province }}
+          {{ profile_form.province.errors }}
+        </div>
+        <div class="field">
+          <label for="{{ profile_form.city.id_for_label }}">{{ profile_form.city.label }}</label>
+          {{ profile_form.city }}
+          {{ profile_form.city.errors }}
+        </div>
+        <div class="field">
+          <label for="{{ profile_form.address.id_for_label }}">{{ profile_form.address.label }}</label>
+          {{ profile_form.address }}
+          {{ profile_form.address.errors }}
+        </div>
+        <div class="field">
+          <label for="{{ profile_form.postal_code.id_for_label }}">{{ profile_form.postal_code.label }}</label>
+          {{ profile_form.postal_code }}
+          {% if profile_form.postal_code.help_text %}<span class="helptext">{{ profile_form.postal_code.help_text }}</span>{% endif %}
+          {{ profile_form.postal_code.errors }}
+        </div>
+
+        <fieldset class="field" style="border:none;padding:0;margin:0">
+          <legend class="label" style="margin-bottom:.5rem">اطلاع‌رسانی</legend>
+          <label class="check-row">
+            {{ profile_form.notify_by_sms }}
+            <span>{{ profile_form.notify_by_sms.label }}</span>
+          </label>
+          <label class="check-row">
+            {{ profile_form.notify_by_email }}
+            <span>{{ profile_form.notify_by_email.label }}</span>
+          </label>
+        </fieldset>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary">ذخیرهٔ تغییرات</button>
+          <a class="btn btn--ghost" href="{% url 'pages:home' %}">بازگشت</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

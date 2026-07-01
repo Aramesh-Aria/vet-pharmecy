@@ -75,6 +75,17 @@ def test_management_command_runs(animal):
 
 
 @pytest.mark.django_db
+def test_vaccination_reminded_at_is_readonly_in_admin():
+    from django.contrib.admin.sites import AdminSite
+
+    from records.admin import VaccinationAdmin
+    from records.models import Vaccination
+
+    admin = VaccinationAdmin(Vaccination, AdminSite())
+    assert "reminded_at" in admin.get_readonly_fields(request=None)
+
+
+@pytest.mark.django_db
 def test_visit_history_shown_on_animal_detail(owner, animal):
     VisitRecord.objects.create(
         animal=animal, date=timezone.localdate(), notes="معاینهٔ سالانه انجام شد"

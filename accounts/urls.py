@@ -7,6 +7,7 @@ app_name = "accounts"
 urlpatterns = [
     path("login/", views.LoginView.as_view(), name="login"),
     path("logout/", views.LogoutView.as_view(), name="logout"),
+    path("profile/", views.ProfileView.as_view(), name="profile"),
     # Registration with phone OTP verification.
     path("register/", views.RegisterView.as_view(), name="register"),
     path("register/verify/", views.RegisterVerifyView.as_view(), name="register_verify"),

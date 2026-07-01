@@ -85,6 +85,13 @@ def test_online_enabled_produces_redirect_and_records_backend(owner, product):
                    PAYMENTS_ONLINE_BACKEND=DUMMY)
 @pytest.mark.django_db
 def test_checkout_redirects_to_gateway_then_callback_settles(owner, product):
+    # Checkout requires a complete profile (delivery details).
+    owner.full_name = "علی"
+    owner.save()
+    p = owner.owner_profile
+    p.province, p.city, p.address, p.postal_code = "مازندران", "آمل", "آمل", "1234567890"
+    p.save()
+
     client = Client()
     client.force_login(owner)
     client.post(reverse("pharmacy:cart_add", args=[product.pk]), {"quantity": 2})

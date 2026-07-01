@@ -1,49 +1,107 @@
 {% extends "base.html" %}
-{% load persian %}
+{% load static persian %}
 {% block title %}{{ category.name }} — {{ section_label }}{% endblock %}
+
 {% block content %}
-  <p><a href="{% url 'catalog:category' category.slug %}">→ {{ category.name }}</a></p>
-  <h1>{{ category.name }} — {{ section_label }}</h1>
+<section class="section">
+  <div class="wrap">
+    <nav class="crumbs reveal" aria-label="مسیر">
+      <a href="{% url 'pages:home' %}">خانه</a><span class="sep">/</span>
+      <a href="{% url 'catalog:category' category.slug %}">{{ category.name }}</a><span class="sep">/</span>
+      <span>{{ section_label }}</span>
+    </nav>
 
-  {% if is_product_section %}
-    <form method="get">
-      <input type="search" name="q" value="{{ q }}" placeholder="جستجوی نام کالا">
-      <label><input type="checkbox" name="in_stock" {% if request.GET.in_stock %}checked{% endif %}> فقط موجود</label>
-      <button type="submit">فیلتر</button>
-    </form>
+    <div class="section__head reveal">
+      <p class="eyebrow">{{ category.name }}</p>
+      <h1 class="title">{{ section_label }}</h1>
+    </div>
 
-    {% if products %}
-      <ul class="product-list">
-        {% for product in products %}
-          <li>
-            <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
-            — {{ product.price|toman }} ریال
-            {% if not product.in_stock %}<em>(ناموجود)</em>
-            {% elif product.is_prescription_only %}<em>(فقط با نسخه)</em>{% endif %}
-          </li>
-        {% endfor %}
-      </ul>
+    {% if is_product_section %}
+      <form class="toolbar reveal" method="get"
+            hx-get="{% url 'catalog:section' category.slug section %}"
+            hx-target="#product-results" hx-select="#product-results" hx-swap="outerHTML"
+            hx-trigger="submit, input from:[name=q] delay:350ms, change from:[name=in_stock]"
+            hx-push-url="true">
+        <div class="field">
+          <input type="search" name="q" value="{{ q }}" placeholder="جستجوی نام کالا" aria-label="جستجو">
+        </div>
+        <label class="check">
+          <input type="checkbox" name="in_stock" value="1" {% if request.GET.in_stock %}checked{% endif %}>
+          فقط کالاهای موجود
+        </label>
+        {# فیلترها آنی اعمال می‌شوند؛ بدون JS این دکمه فرم را ارسال می‌کند. #}
+        <noscript><button type="submit" class="btn btn--forest btn--sm">فیلتر</button></noscript>
+      </form>
+
+      <div id="product-results">
+        {% if products %}
+          <div class="product-grid">
+            {% for product in products %}
+              <a class="pcard reveal" href="{{ product.get_absolute_url }}">
+                <span class="pcard__media">
+                  {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" decoding="async">
+                  {% else %}
+                    <svg class="specimen__glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M10.5 3.5 3.5 10.5a4 4 0 0 0 0 5.6l4.4 4.4a4 4 0 0 0 5.6 0l7-7a4 4 0 0 0 0-5.6l-4.4-4.4a4 4 0 0 0-5.6 0Z"/><path d="M7 7l10 10"/></svg>
+                  {% endif %}
+                  <span class="pcard__badges">
+                    {% if not product.in_stock %}<span class="badge badge--out badge--dot">ناموجود</span>
+                    {% elif product.is_prescription_only %}<span class="badge badge--rx">فقط با نسخه</span>{% endif %}
+                  </span>
+                </span>
+                <span class="pcard__body">
+                  <span class="pcard__name">{{ product.name }}</span>
+                  <span class="pcard__price">{{ product.price|toman }} <span class="unit">ریال</span></span>
+                </span>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty">
+            <svg class="empty__art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <p class="empty__title">کالایی یافت نشد</p>
+            <p>عبارت جستجو را تغییر دهید یا فیلتر «فقط موجود» را بردارید.</p>
+          </div>
+        {% endif %}
+        {% include "partials/pagination.html" with hx_target="#product-results" hx_select="#product-results" %}
+      </div>
+
+    {% elif section == "service" %}
+      {% if services %}
+        <div class="grid" style="grid-template-columns:1fr">
+          {% for service in services %}
+            <div class="scard reveal" style="cursor:default">
+              <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:baseline;justify-content:space-between">
+                <h2 class="scard__title">{{ service.name }}</h2>
+                <div style="display:flex;gap:.8rem;align-items:center;color:var(--muted);font-size:.92rem">
+                  {% if service.duration_minutes %}<span>حدود {{ service.duration_minutes|fa_digits }} دقیقه</span>{% endif %}
+                  {% if service.price %}<span style="color:var(--forest);font-weight:700">{{ service.price|toman }} ریال</span>{% endif %}
+                </div>
+              </div>
+              {% if service.description %}<p class="scard__desc">{{ service.description }}</p>{% endif %}
+              <a class="btn btn--primary btn--sm" style="align-self:flex-start;margin-top:.4rem" href="{% url 'appointments:request' %}?service={{ service.pk }}">درخواست نوبت
+                <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">
+          <svg class="empty__art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 21s-7-4.5-7-10a7 7 0 0 1 14 0c0 5.5-7 10-7 10Z"/><path d="M9.5 11h5M12 8.5v5"/></svg>
+          <p class="empty__title">خدمتی برای این دسته ثبت نشده</p>
+          <p>به‌زودی خدمات این دسته در اینجا اعلام می‌شود.</p>
+        </div>
+      {% endif %}
+
     {% else %}
-      <p>کالایی یافت نشد.</p>
+      {# Online Visit — paid booking, arrives with online payment (Phase 5). #}
+      <div class="soon reveal">
+        <span class="soon__tag">به‌زودی</span>
+        <h2 class="soon__title">ویزیت آنلاین در راه است</h2>
+        <p style="color:var(--muted);max-width:42ch;margin-inline:auto">ویزیت آنلاین با پزشک، همراه با پرداخت اینترنتی فعال می‌شود. تا آن زمان می‌توانید از بخش «خدمات» برای ویزیت حضوری درخواست نوبت بدهید.</p>
+        <a class="btn btn--ghost" style="margin-top:1.2rem" href="{% url 'catalog:section' category.slug 'service' %}">مشاهدهٔ خدمات حضوری</a>
+      </div>
     {% endif %}
-  {% elif section == "service" %}
-    {% if services %}
-      <ul class="service-list">
-        {% for service in services %}
-          <li>
-            <strong>{{ service.name }}</strong>
-            {% if service.duration_minutes %}— حدود {{ service.duration_minutes|fa_digits }} دقیقه{% endif %}
-            {% if service.price %}— {{ service.price|toman }} ریال{% endif %}
-            {% if service.description %}<br>{{ service.description }}{% endif %}
-            <br><a href="{% url 'appointments:request' %}?service={{ service.pk }}">درخواست نوبت</a>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>خدمتی برای این دسته ثبت نشده است.</p>
-    {% endif %}
-  {% else %}
-    {# Online Visit -> paid booking (Phase 5, post-gateway). #}
-    <p>این بخش پس از فعال‌سازی پرداخت آنلاین اضافه می‌شود.</p>
-  {% endif %}
+  </div>
+</section>
 {% endblock %}

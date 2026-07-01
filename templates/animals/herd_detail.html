@@ -1,17 +1,34 @@
 {% extends "base.html" %}
 {% load persian %}
 {% block title %}{{ herd }}{% endblock %}
+
 {% block content %}
-  <p><a href="{% url 'animals:list' %}">→ بازگشت به حیوانات من</a></p>
-  <h1>{{ herd }}</h1>
-  <ul>
-    <li>دسته: {{ herd.animal_category }}</li>
-    <li>گونه: {{ herd.species }}</li>
-    <li>تعداد رأس: {{ herd.head_count|fa_digits }}</li>
-    {% if herd.farm_location %}<li>موقعیت دامداری: {{ herd.farm_location }}</li>{% endif %}
-  </ul>
-  <p>
-    <a href="{% url 'animals:herd_update' herd.pk %}">ویرایش</a> ·
-    <a href="{% url 'animals:herd_delete' herd.pk %}">حذف</a>
-  </p>
+<section class="section">
+  <div class="wrap" style="max-width:48rem">
+    <nav class="crumbs reveal" aria-label="مسیر">
+      <a href="{% url 'animals:list' %}">حیوانات من</a><span class="sep">/</span>
+      <span>{{ herd }}</span>
+    </nav>
+
+    <div class="head-row reveal">
+      <div>
+        <p class="eyebrow" style="margin-bottom:.4rem">گله (دام)</p>
+        <h1 class="title" style="margin:0">{{ herd }}</h1>
+      </div>
+      <div style="display:flex;gap:.6rem">
+        <a class="btn btn--ghost btn--sm" href="{% url 'animals:herd_update' herd.pk %}">ویرایش</a>
+        <a class="btn btn--ghost btn--sm" href="{% url 'animals:herd_delete' herd.pk %}" style="color:var(--danger);border-color:color-mix(in srgb,var(--danger) 30%,var(--line))">حذف</a>
+      </div>
+    </div>
+
+    <div class="form-card reveal" data-delay="1" style="max-width:none">
+      <dl class="dl">
+        <dt>دسته</dt><dd>{{ herd.animal_category }}</dd>
+        <dt>گونه</dt><dd>{{ herd.species }}</dd>
+        <dt>تعداد رأس</dt><dd class="num">{{ herd.head_count|fa_digits }}</dd>
+        {% if herd.farm_location %}<dt>موقعیت دامداری</dt><dd>{{ herd.farm_location }}</dd>{% endif %}
+      </dl>
+    </div>
+  </div>
+</section>
 {% endblock %}

@@ -1,18 +1,31 @@
 {% extends "base.html" %}
+{% load persian %}
 {% block title %}گذرواژهٔ جدید{% endblock %}
+
 {% block content %}
-  <h1>تعیین گذرواژهٔ جدید</h1>
-  <p>کد ارسال‌شده به {{ phone }} و گذرواژهٔ جدید را وارد کنید.</p>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    {% for field in form %}
-      <p>
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label><br>
-        {{ field }}
-        {{ field.errors }}
-      </p>
-    {% endfor %}
-    <button type="submit">تغییر گذرواژه</button>
-  </form>
+<section class="auth">
+  <div class="auth__card reveal">
+    <div class="auth__brand">{% include "partials/brand_mark.svg" %}</div>
+    <div class="auth__head">
+      <h1 class="auth__title">گذرواژهٔ جدید</h1>
+      <p class="auth__sub">کد ارسال‌شده به <span class="num" dir="ltr">{{ phone|fa_digits }}</span> و گذرواژهٔ جدید را وارد کنید.</p>
+    </div>
+
+    <form method="post" novalidate class="form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form__error">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}
+        <div class="field{% if 'code' in field.name %} field--otp{% endif %}">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<span class="helptext">{{ field.help_text|safe }}</span>{% endif %}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn--primary btn--block">تغییر گذرواژه</button>
+    </form>
+
+    <p class="auth__alt"><a href="{% url 'accounts:login' %}">بازگشت به ورود</a></p>
+  </div>
+</section>
 {% endblock %}

@@ -1,15 +1,53 @@
 {% extends "base.html" %}
 {% load persian %}
 {% block title %}تکرار نسخه #{{ refill.pk|fa_digits }}{% endblock %}
+
 {% block content %}
-  <p><a href="{% url 'pharmacy:refill_list' %}">→ درخواست‌های تکرار نسخه</a></p>
-  <h1>تکرار نسخه #{{ refill.pk|fa_digits }}</h1>
-  <ul>
-    <li>دارو: {{ refill.prescription.product.name }}</li>
-    <li>حیوان: {{ refill.prescription.animal.name }}</li>
-    <li>تعداد: {{ refill.quantity|fa_digits }}</li>
-    <li>وضعیت: <strong>{{ refill.get_status_display }}</strong></li>
-    {% if refill.price %}<li>قیمت: {{ refill.price|toman }} ریال (پرداخت هنگام تحویل)</li>{% endif %}
-    {% if refill.staff_note %}<li>یادداشت: {{ refill.staff_note }}</li>{% endif %}
-  </ul>
+<section class="section">
+  <div class="wrap" style="max-width:48rem">
+    <nav class="crumbs reveal" aria-label="مسیر">
+      <a href="{% url 'pharmacy:prescriptions' %}">نسخه‌های من</a><span class="sep">/</span>
+      <a href="{% url 'pharmacy:refill_list' %}">درخواست‌های تکرار</a><span class="sep">/</span>
+      <span>#{{ refill.pk|fa_digits }}</span>
+    </nav>
+
+    <div class="head-row reveal">
+      <div>
+        <p class="eyebrow" style="margin-bottom:.4rem">تکرار نسخه #{{ refill.pk|fa_digits }}</p>
+        <h1 class="title" style="margin:0">{{ refill.prescription.product.name }}</h1>
+      </div>
+      {% include "partials/refill_status.html" %}
+    </div>
+
+    <div class="form-card reveal" data-delay="1" style="max-width:none">
+      <dl class="dl">
+        <dt>دارو</dt><dd>{{ refill.prescription.product.name }}</dd>
+        <dt>حیوان</dt><dd>{{ refill.prescription.animal.name }}</dd>
+        <dt>تعداد</dt><dd class="num">{{ refill.quantity|fa_digits }}</dd>
+        {% if refill.price %}<dt>قیمت</dt><dd class="num">{{ refill.price|toman }} ریال</dd>{% endif %}
+        {% if refill.staff_note %}<dt>یادداشت کلینیک</dt><dd>{{ refill.staff_note }}</dd>{% endif %}
+      </dl>
+    </div>
+
+    {% if refill.price %}
+      <div class="notice notice--pickup reveal" data-delay="2" style="margin-top:1.4rem">
+        <span class="notice__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 9h13v8H3zM16 12h3l2 3v2h-5"/><circle cx="7" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg>
+        </span>
+        <div><strong>پرداخت هنگام تحویل.</strong>
+          <p style="margin:.2rem 0 0;color:var(--muted)">پس از آماده شدن، مبلغ را هنگام دریافت در داروخانه بپردازید.</p>
+        </div>
+      </div>
+    {% elif refill.status == 'requested' %}
+      <div class="notice reveal" data-delay="2" style="margin-top:1.4rem">
+        <span class="notice__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </span>
+        <div><strong>در انتظار بررسی.</strong>
+          <p style="margin:.2rem 0 0;color:var(--muted)">پس از تأیید و قیمت‌گذاری توسط همکاران، وضعیت به‌روزرسانی می‌شود.</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}

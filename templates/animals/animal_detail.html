@@ -1,48 +1,71 @@
 {% extends "base.html" %}
 {% load persian %}
 {% block title %}{{ animal.name }}{% endblock %}
+
 {% block content %}
-  <p><a href="{% url 'animals:list' %}">→ بازگشت به حیوانات من</a></p>
-  <h1>{{ animal.name }}</h1>
-  {% if animal.photo %}<img src="{{ animal.photo.url }}" alt="{{ animal.name }}" style="max-width:240px">{% endif %}
-  <ul>
-    <li>دسته: {{ animal.animal_category }}</li>
-    <li>گونه: {{ animal.species }}</li>
-    <li>جنسیت: {{ animal.get_sex_display }}</li>
-    {% if animal.birth_date %}<li>تاریخ تولد: {{ animal.birth_date|jalali }}</li>{% endif %}
-    {% if animal.weight_kg %}<li>وزن: {{ animal.weight_kg|fa_digits }} کیلوگرم</li>{% endif %}
-  </ul>
-  <p>
-    <a href="{% url 'animals:update' animal.pk %}">ویرایش</a> ·
-    <a href="{% url 'animals:delete' animal.pk %}">حذف</a>
-  </p>
+<section class="section">
+  <div class="wrap" style="max-width:56rem">
+    <nav class="crumbs reveal" aria-label="مسیر">
+      <a href="{% url 'animals:list' %}">حیوانات من</a><span class="sep">/</span>
+      <span>{{ animal.name }}</span>
+    </nav>
 
-  <section>
-    <h2>تاریخچهٔ ویزیت</h2>
-    {% if visit_records %}
-      <ul>
-        {% for v in visit_records %}
-          <li>{{ v.date|jalali }} — {{ v.service.name|default:"—" }}{% if v.notes %}: {{ v.notes }}{% endif %}</li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>ویزیتی ثبت نشده است.</p>
-    {% endif %}
-  </section>
+    <div class="head-row reveal">
+      <div>
+        <p class="eyebrow" style="margin-bottom:.4rem">{{ animal.animal_category }}</p>
+        <h1 class="title" style="margin:0">{{ animal.name }}</h1>
+      </div>
+      <div style="display:flex;gap:.6rem">
+        <a class="btn btn--ghost btn--sm" href="{% url 'animals:update' animal.pk %}">ویرایش</a>
+        <a class="btn btn--ghost btn--sm" href="{% url 'animals:delete' animal.pk %}" style="color:var(--danger);border-color:color-mix(in srgb,var(--danger) 30%,var(--line))">حذف</a>
+      </div>
+    </div>
 
-  <section>
-    <h2>واکسیناسیون</h2>
-    {% if vaccinations %}
-      <ul>
-        {% for vac in vaccinations %}
-          <li>
-            {{ vac.vaccine_name }} — تزریق: {{ vac.date_given|jalali }}
-            {% if vac.next_due %}— نوبت بعدی: {{ vac.next_due|jalali }}{% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>واکسیناسیونی ثبت نشده است.</p>
-    {% endif %}
-  </section>
+    <div class="detail-grid {% if animal.photo %}detail-grid--media{% endif %} reveal" data-delay="1">
+      {% if animal.photo %}
+        <div class="detail-photo"><img src="{{ animal.photo.url }}" alt="{{ animal.name }}" decoding="async"></div>
+      {% endif %}
+      <dl class="dl">
+        <dt>دسته</dt><dd>{{ animal.animal_category }}</dd>
+        <dt>گونه</dt><dd>{{ animal.species }}</dd>
+        <dt>جنسیت</dt><dd>{{ animal.get_sex_display }}</dd>
+        {% if animal.birth_date %}<dt>تاریخ تولد</dt><dd class="num">{{ animal.birth_date|jalali }}</dd>{% endif %}
+        {% if animal.weight_kg %}<dt>وزن</dt><dd class="num">{{ animal.weight_kg|fa_digits }} کیلوگرم</dd>{% endif %}
+      </dl>
+    </div>
+
+    <div class="subsection reveal">
+      <h2 class="subsection__title">تاریخچهٔ ویزیت</h2>
+      {% if visit_records %}
+        <ul class="rowlist">
+          {% for v in visit_records %}
+            <li>
+              <span class="when">{{ v.date|jalali }}</span>
+              <span>{{ v.service.name|default:"ویزیت" }}{% if v.notes %} — {{ v.notes }}{% endif %}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty--inline">هنوز ویزیتی برای این حیوان ثبت نشده است.</div>
+      {% endif %}
+    </div>
+
+    <div class="subsection reveal">
+      <h2 class="subsection__title">واکسیناسیون</h2>
+      {% if vaccinations %}
+        <ul class="rowlist">
+          {% for vac in vaccinations %}
+            <li>
+              <span class="when">{{ vac.date_given|jalali }}</span>
+              <span>{{ vac.vaccine_name }}</span>
+              {% if vac.next_due %}<span class="due">نوبت بعدی: {{ vac.next_due|jalali }}</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty--inline">واکسیناسیونی ثبت نشده است.</div>
+      {% endif %}
+    </div>
+  </div>
+</section>
 {% endblock %}

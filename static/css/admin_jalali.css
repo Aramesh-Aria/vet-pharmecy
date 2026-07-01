@@ -1,0 +1,50 @@
+/* Self-contained styles for the Jalali date picker inside the Django admin.
+   The .jdate* classes are namespaced (no clash with admin styles); the palette
+   vars are redeclared here so the picker is styled without loading app.css.
+   Kept in sync with the .jdate block in static/css/app.css. */
+:root {
+  --ink: #23271F;
+  --surface: #FBF8F0;
+  --surface-2: #ECE4D1;
+  --forest: #1E3A2B;
+  --moss: #46735A;
+  --line: #DCD3BE;
+  --line-soft: #E7E0CF;
+  --muted: #6E6A5B;
+  --saffron: #D6A23E;
+  --clay-dark: #A24C2C;
+  --radius: 14px;
+  --shadow-lg: 0 18px 50px -22px rgba(30, 58, 43, .40);
+}
+
+.jdate { position: relative; display: inline-block; }
+.jdate .input, .jdatetime__time {
+  font: inherit; padding: .35rem .5rem; border: 1px solid var(--line);
+  border-radius: 8px; background: #fff; color: var(--ink);
+}
+.jdate__display { cursor: pointer; padding-inline-end: 2.6rem; min-width: 11rem; }
+.jdate__icon { position: absolute; inset-inline-end: .5rem; inset-block-start: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: var(--moss); padding: .3rem; line-height: 0; border-radius: 6px; }
+.jdate__icon:hover { background: var(--surface-2); color: var(--forest); }
+.jdate__pop { position: absolute; inset-inline-start: 0; top: calc(100% + .4rem); z-index: 40;
+  width: 18rem; max-width: 90vw; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: .8rem; }
+.jdate__bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+.jdate__title { font-weight: 700; color: var(--forest); }
+.jdate__nav { width: 2rem; height: 2rem; border: 1px solid var(--line); background: var(--surface);
+  border-radius: 8px; cursor: pointer; font-size: 1.1rem; color: var(--forest); line-height: 1; }
+.jdate__nav:hover { background: var(--surface-2); border-color: var(--moss); }
+.jdate__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.jdate__wd { text-align: center; font-size: .72rem; font-weight: 700; color: var(--muted); padding-block: .3rem; }
+.jdate__cell { aspect-ratio: 1; border: none; background: none; border-radius: 8px; cursor: pointer;
+  font: inherit; font-size: .9rem; color: var(--ink); display: grid; place-items: center; }
+.jdate__cell:hover { background: var(--surface-2); }
+.jdate__cell--empty { cursor: default; }
+.jdate__cell.is-today { box-shadow: inset 0 0 0 1.5px var(--saffron); color: var(--clay-dark); font-weight: 700; }
+.jdate__cell.is-selected { background: var(--moss); color: #fff; font-weight: 700; }
+.jdate__foot { display: flex; gap: .5rem; margin-top: .7rem; padding-top: .7rem; border-top: 1px solid var(--line-soft); }
+.jdate__btn { flex: 1; border: 1px solid var(--line); background: var(--surface); border-radius: 8px;
+  padding: .4rem; cursor: pointer; font: inherit; font-size: .85rem; color: var(--forest); }
+.jdate__btn:hover { background: var(--surface-2); border-color: var(--moss); }
+.jdate__btn--clear { color: var(--muted); }
+.jdatetime { display: inline-flex; gap: .5rem; align-items: center; }

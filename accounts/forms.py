@@ -7,8 +7,35 @@ from django.contrib.auth.forms import (
     UserCreationForm,
 )
 
-from .models import User
-from .validators import normalize_phone
+from .models import OwnerProfile, User
+from .validators import normalize_phone, normalize_postal_code
+
+
+class ProfileForm(forms.ModelForm):
+    """The owner edits their own contact name + email."""
+
+    class Meta:
+        model = User
+        fields = ("full_name", "email")
+
+
+class OwnerProfileForm(forms.ModelForm):
+    """The owner edits their address, postal code + notification preferences."""
+
+    class Meta:
+        model = OwnerProfile
+        fields = (
+            "province", "city", "address", "postal_code",
+            "notify_by_sms", "notify_by_email",
+        )
+        widgets = {
+            "address": forms.Textarea(attrs={"rows": 3}),
+            "postal_code": forms.TextInput(attrs={"inputmode": "numeric"}),
+        }
+
+    def clean_postal_code(self):
+        value = self.cleaned_data.get("postal_code", "")
+        return normalize_postal_code(value) if value else value
 
 
 class PhoneAuthenticationForm(AuthenticationForm):

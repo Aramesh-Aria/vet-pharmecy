@@ -1,0 +1,2 @@
+{% comment %}Appointment status badge. Expects `appt`.{% endcomment %}
+<span class="status {% if appt.status == 'requested' %}status--pending{% elif appt.status == 'confirmed' %}status--ok{% elif appt.status == 'completed' %}status--done{% else %}status--cancel{% endif %}">{{ appt.get_status_display }}</span>

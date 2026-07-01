@@ -1,18 +1,31 @@
 {% extends "base.html" %}
 {% block title %}درخواست نوبت{% endblock %}
+
 {% block content %}
-  <h1>درخواست نوبت</h1>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    {% for field in form %}
-      <p>
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label><br>
-        {{ field }}
-        {{ field.errors }}
-      </p>
-    {% endfor %}
-    <button type="submit">ثبت درخواست</button>
-  </form>
-  <p>حیوانی ندارید؟ <a href="{% url 'animals:create' %}">افزودن حیوان</a></p>
+<section class="section">
+  <div class="wrap" style="max-width:42rem">
+    <nav class="crumbs reveal" aria-label="مسیر">
+      <a href="{% url 'appointments:list' %}">نوبت‌های من</a><span class="sep">/</span>
+      <span>درخواست نوبت</span>
+    </nav>
+    <div class="section__head reveal">
+      <p class="eyebrow">نوبت‌دهی</p>
+      <h1 class="title">درخواست نوبت</h1>
+      <p class="lede">حیوان، خدمت و تاریخ دلخواه را انتخاب کنید؛ زمان نهایی را همکاران ما تأیید می‌کنند.</p>
+    </div>
+
+    <div class="form-card reveal">
+      <form method="post" novalidate class="form">
+        {% csrf_token %}
+        {% include "partials/form_fields.html" %}
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary">ثبت درخواست</button>
+          <a class="btn btn--ghost" href="{% url 'appointments:list' %}">انصراف</a>
+        </div>
+      </form>
+    </div>
+
+    <p class="auth__alt" style="text-align:start;margin-top:1.2rem">حیوانی ندارید؟ <a href="{% url 'animals:create' %}">ابتدا یک حیوان اضافه کنید</a></p>
+  </div>
+</section>
 {% endblock %}

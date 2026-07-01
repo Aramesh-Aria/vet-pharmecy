@@ -1,18 +1,30 @@
 {% extends "base.html" %}
 {% block title %}ثبت‌نام{% endblock %}
+
 {% block content %}
-  <h1>ثبت‌نام</h1>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    {% for field in form %}
-      <p>
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label><br>
-        {{ field }}
-        {{ field.errors }}
-      </p>
-    {% endfor %}
-    <button type="submit">ارسال کد تأیید</button>
-  </form>
-  <p>حساب دارید؟ <a href="{% url 'accounts:login' %}">ورود</a></p>
+<section class="auth">
+  <div class="auth__card reveal">
+    <div class="auth__brand">{% include "partials/brand_mark.svg" %}</div>
+    <div class="auth__head">
+      <h1 class="auth__title">ساخت حساب</h1>
+      <p class="auth__sub">برای تأیید شماره، یک کد پیامکی برایتان ارسال می‌شود.</p>
+    </div>
+
+    <form method="post" novalidate class="form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form__error">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<span class="helptext">{{ field.help_text|safe }}</span>{% endif %}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn--primary btn--block">ارسال کد تأیید</button>
+    </form>
+
+    <p class="auth__alt">حساب دارید؟ <a href="{% url 'accounts:login' %}">وارد شوید</a></p>
+  </div>
+</section>
 {% endblock %}

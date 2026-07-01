@@ -1,0 +1,2 @@
+{% comment %}Order status badge. Expects `order`.{% endcomment %}
+<span class="status {% if order.status == 'placed' %}status--pending{% elif order.status == 'approved' %}status--ok{% elif order.status == 'ready' %}status--ready{% elif order.status == 'collected' %}status--done{% else %}status--cancel{% endif %}">{{ order.get_status_display }}</span>

@@ -55,6 +55,23 @@ def test_owner_cannot_access_others_animal(owner, other_owner, category):
 
 
 @pytest.mark.django_db
+def test_admin_animal_autocomplete_shows_owner_and_category(owner, category):
+    from core.admin_site import VetAutocompleteJsonView
+
+    owner.full_name = "علی رضایی"
+    owner.save()
+    animal = Animal.objects.create(
+        owner=owner, animal_category=category, name="رکس", species="سگ"
+    )
+
+    result = VetAutocompleteJsonView().serialize_result(animal, "pk")
+    assert "رکس" in result["text"]
+    assert "علی رضایی" in result["text"]      # owner shown for disambiguation
+    assert owner.phone in result["text"]
+    assert result["category_id"] == category.pk  # drives the prescription filter
+
+
+@pytest.mark.django_db
 def test_owner_can_create_herd(owner, db):
     ruminants = AnimalCategory.objects.get(slug="ruminants")
     client = Client()

@@ -22,7 +22,11 @@ class CartView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        from accounts.models import OwnerProfile
+
         ctx["cart"] = services.get_cart(self.request.user)
+        profile, _ = OwnerProfile.objects.get_or_create(user=self.request.user)
+        ctx["profile_complete"] = profile.is_complete
         return ctx
 
 
@@ -64,7 +68,20 @@ def cart_remove(request, product_id):
 @login_required
 @require_POST
 def checkout(request):
+    from accounts.models import OwnerProfile
     from payments.services import gateway_redirect_url
+
+    # Orders are collected/delivered, so a complete profile (name, province,
+    # city, address, postal code) is required before ordering. The cart itself
+    # stays open — only placing the order is gated.
+    profile, _ = OwnerProfile.objects.get_or_create(user=request.user)
+    if not profile.is_complete:
+        messages.error(
+            request,
+            "برای ثبت سفارش ابتدا پروفایل خود را کامل کنید "
+            "(نام، استان، شهر، نشانی و کد پستی).",
+        )
+        return redirect("accounts:profile")
 
     try:
         order = services.place_order(request.user)

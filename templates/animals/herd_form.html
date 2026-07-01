@@ -1,11 +1,29 @@
 {% extends "base.html" %}
 {% block title %}{% if form.instance.pk %}ویرایش گله{% else %}افزودن گله{% endif %}{% endblock %}
+
 {% block content %}
-  <h1>{% if form.instance.pk %}ویرایش گله{% else %}افزودن گله{% endif %}</h1>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">ذخیره</button>
-    <a href="{% url 'animals:list' %}">انصراف</a>
-  </form>
+<section class="section">
+  <div class="wrap" style="max-width:42rem">
+    <nav class="crumbs reveal" aria-label="مسیر">
+      <a href="{% url 'animals:list' %}">حیوانات من</a><span class="sep">/</span>
+      <span>{% if form.instance.pk %}ویرایش گله{% else %}افزودن گله{% endif %}</span>
+    </nav>
+    <div class="section__head reveal">
+      <p class="eyebrow">گله‌ها (دام)</p>
+      <h1 class="title">{% if form.instance.pk %}ویرایش گله{% else %}افزودن گله{% endif %}</h1>
+      <p class="lede">دام‌ها به‌صورت گروهی ثبت می‌شوند؛ نیازی به ثبت تک‌تک رأس‌ها نیست.</p>
+    </div>
+
+    <div class="form-card reveal">
+      <form method="post" novalidate class="form">
+        {% csrf_token %}
+        {% include "partials/form_fields.html" %}
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary">ذخیره</button>
+          <a class="btn btn--ghost" href="{% url 'animals:list' %}">انصراف</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
 {% endblock %}

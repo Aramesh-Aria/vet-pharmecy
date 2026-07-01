@@ -116,9 +116,18 @@ def test_cancel_restocks(owner, product):
     assert product.stock == 10  # restored
 
 
+def _complete_profile(owner):
+    owner.full_name = "علی رضایی"
+    owner.save()
+    p = owner.owner_profile
+    p.province, p.city, p.address, p.postal_code = "مازندران", "آمل", "آمل", "1234567890"
+    p.save()
+
+
 @override_settings(SMS_BACKEND=LOCMEM)
 @pytest.mark.django_db
 def test_cart_add_and_checkout_via_http(owner, product):
+    _complete_profile(owner)
     client = Client()
     client.force_login(owner)
 
@@ -131,6 +140,28 @@ def test_cart_add_and_checkout_via_http(owner, product):
     order = Order.objects.get(owner=owner)
     assert order.total == 1_000_000
     assert resp.url == order.get_absolute_url()
+
+
+@pytest.mark.django_db
+def test_checkout_blocked_until_profile_complete(owner, product):
+    client = Client()
+    client.force_login(owner)
+    services.add_to_cart(owner, product, 1)
+
+    # Incomplete profile → checkout is refused and nothing is ordered.
+    resp = client.post(reverse("pharmacy:checkout"))
+    assert resp.status_code == 302
+    assert resp.url == reverse("accounts:profile")
+    assert Order.objects.filter(owner=owner).count() == 0
+
+    # Cart itself stays usable while the profile is incomplete.
+    assert services.get_cart(owner).item_count == 1
+
+    # Once complete, the same checkout succeeds.
+    _complete_profile(owner)
+    resp = client.post(reverse("pharmacy:checkout"))
+    assert resp.status_code == 302
+    assert Order.objects.filter(owner=owner).count() == 1
 
 
 @pytest.mark.django_db
@@ -164,6 +195,23 @@ def test_prescription_requires_prescription_only_product(owner, category, produc
     rx = Prescription(animal=animal, product=product, issued_by=owner)
     with pytest.raises(ValidationError):
         rx.full_clean()
+
+
+@pytest.mark.django_db
+def test_prescription_rejects_product_from_other_category(owner, category):
+    # A bird medication must not be prescribable for a cat (different category).
+    birds = AnimalCategory.objects.get(slug="ornamental-birds")
+    bird_med = Product.objects.create(
+        animal_category=birds, section=Section.MEDICATION, name="داروی پرنده",
+        slug="bird-med", price=500_000, stock=5, is_prescription_only=True,
+    )
+    cat = Animal.objects.create(
+        owner=owner, animal_category=category, name="پشمک", species="گربه"
+    )
+    rx = Prescription(animal=cat, product=bird_med, issued_by=owner)
+    with pytest.raises(ValidationError) as exc:
+        rx.full_clean()
+    assert "product" in exc.value.error_dict
 
 
 @override_settings(SMS_BACKEND=LOCMEM)

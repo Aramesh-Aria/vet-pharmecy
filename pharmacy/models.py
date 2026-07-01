@@ -19,7 +19,7 @@ class Cart(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="cart",
-        verbose_name=_("مالک"),
+        verbose_name=_("مشتری"),
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -76,13 +76,13 @@ class Order(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="orders",
-        verbose_name=_("مالک"),
+        verbose_name=_("مشتری"),
     )
     status = models.CharField(
         _("وضعیت"), max_length=12, choices=Status.choices, default=Status.PLACED
     )
     note = models.TextField(_("یادداشت مشتری"), blank=True)
-    staff_note = models.TextField(_("یادداشت کارمند"), blank=True)
+    staff_note = models.TextField(_("یادداشت همکار"), blank=True)
     created_at = models.DateTimeField(_("ثبت"), auto_now_add=True)
     updated_at = models.DateTimeField(_("به‌روزرسانی"), auto_now=True)
 
@@ -170,6 +170,16 @@ class Prescription(models.Model):
             raise ValidationError(
                 {"product": _("نسخه فقط برای داروی «فقط با نسخه» صادر می‌شود.")}
             )
+        # The medication must belong to the same Animal Category as the animal —
+        # e.g. a bird drug can't be prescribed for a cat.
+        if (
+            self.product_id
+            and self.animal_id
+            and self.product.animal_category_id != self.animal.animal_category_id
+        ):
+            raise ValidationError(
+                {"product": _("این دارو به دستهٔ این حیوان تعلق ندارد.")}
+            )
 
     @property
     def owner(self):
@@ -199,14 +209,14 @@ class RefillRequest(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="refill_requests",
-        verbose_name=_("مالک"),
+        verbose_name=_("مشتری"),
     )
     quantity = models.PositiveIntegerField(_("تعداد"), default=1)
     status = models.CharField(
         _("وضعیت"), max_length=12, choices=Status.choices, default=Status.REQUESTED
     )
     price = models.PositiveBigIntegerField(_("قیمت (ریال)"), null=True, blank=True)
-    staff_note = models.TextField(_("یادداشت کارمند"), blank=True)
+    staff_note = models.TextField(_("یادداشت همکار"), blank=True)
     created_at = models.DateTimeField(_("ثبت"), auto_now_add=True)
     updated_at = models.DateTimeField(_("به‌روزرسانی"), auto_now=True)
 

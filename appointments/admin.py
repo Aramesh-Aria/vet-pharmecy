@@ -1,11 +1,13 @@
 from django.contrib import admin
 
+from core.admin_mixins import JalaliAdminMixin
+
 from . import services
 from .models import Appointment
 
 
 @admin.register(Appointment)
-class AppointmentAdmin(admin.ModelAdmin):
+class AppointmentAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = (
         "id", "owner", "animal", "service", "status",
         "preferred_date", "confirmed_datetime", "vet",

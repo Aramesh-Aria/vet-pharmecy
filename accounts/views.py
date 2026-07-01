@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views import View
@@ -19,12 +20,14 @@ from notifications.service import notify
 
 from .forms import (
     OTPVerifyForm,
+    OwnerProfileForm,
     PasswordResetRequestForm,
     PhoneAuthenticationForm,
+    ProfileForm,
     RegistrationForm,
     SetNewPasswordForm,
 )
-from .models import User
+from .models import OwnerProfile, User
 from .otp import send_otp, verify_otp
 
 # Session keys for the pending (not-yet-verified) registration / reset.
@@ -41,6 +44,36 @@ class LoginView(auth_views.LoginView):
 
 class LogoutView(auth_views.LogoutView):
     pass
+
+
+class ProfileView(LoginRequiredMixin, View):
+    """The owner views and edits their own account: name, email, address, and
+    notification preferences. Phone is the login identity and is shown read-only."""
+
+    template_name = "accounts/profile.html"
+
+    def _context(self, request, form=None, profile_form=None):
+        profile, _ = OwnerProfile.objects.get_or_create(user=request.user)
+        return {
+            "form": form or ProfileForm(instance=request.user),
+            "profile_form": profile_form or OwnerProfileForm(instance=profile),
+        }
+
+    def get(self, request):
+        return render(request, self.template_name, self._context(request))
+
+    def post(self, request):
+        profile, _ = OwnerProfile.objects.get_or_create(user=request.user)
+        form = ProfileForm(request.POST, instance=request.user)
+        profile_form = OwnerProfileForm(request.POST, instance=profile)
+        if form.is_valid() and profile_form.is_valid():
+            form.save()
+            profile_form.save()
+            messages.success(request, "اطلاعات حساب شما به‌روزرسانی شد.")
+            return redirect("accounts:profile")
+        return render(
+            request, self.template_name, self._context(request, form, profile_form)
+        )
 
 
 class RegisterView(View):
@@ -111,8 +144,14 @@ class RegisterVerifyView(View):
             notify(user, "welcome")
         except Exception:
             pass  # welcome message is best-effort
-        messages.success(request, "حساب شما با موفقیت ساخته شد.")
-        return redirect("pages:home")
+        messages.success(
+            request,
+            "حساب شما ساخته شد. لطفاً برای تکمیل پروفایل، نشانی و کد پستی خود را "
+            "وارد کنید تا امکان ارسال سفارش‌ها فراهم شود.",
+        )
+        # Send new owners to complete their profile (address + postal code) so
+        # delivery details exist before they order.
+        return redirect("accounts:profile")
 
 
 class ResendRegisterOTPView(View):

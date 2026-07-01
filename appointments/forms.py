@@ -2,6 +2,7 @@ from django import forms
 
 from animals.models import Animal
 from catalog.models import Service
+from core.widgets import JalaliDateInput
 
 
 class AppointmentRequestForm(forms.Form):
@@ -14,7 +15,7 @@ class AppointmentRequestForm(forms.Form):
         queryset=Service.objects.filter(is_active=True), label="خدمت"
     )
     preferred_date = forms.DateField(
-        label="تاریخ پیشنهادی", widget=forms.DateInput(attrs={"type": "date"})
+        label="تاریخ پیشنهادی", widget=JalaliDateInput()
     )
     preferred_time_note = forms.CharField(
         label="بازهٔ زمانی پیشنهادی", required=False, max_length=100

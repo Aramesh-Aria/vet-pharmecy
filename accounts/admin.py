@@ -10,7 +10,7 @@ class OwnerProfileInline(admin.StackedInline):
     model = OwnerProfile
     can_delete = False
     extra = 0
-    verbose_name_plural = _("پروفایل مالک")
+    verbose_name_plural = _("پروفایل مشتری")
 
 
 @admin.register(User)

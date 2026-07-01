@@ -1,26 +1,44 @@
 {% extends "base.html" %}
 {% load persian %}
 {% block title %}نوبت #{{ appointment.pk|fa_digits }}{% endblock %}
+
 {% block content %}
-  <p><a href="{% url 'appointments:list' %}">→ نوبت‌های من</a></p>
-  <h1>نوبت #{{ appointment.pk|fa_digits }}</h1>
-  <ul>
-    <li>خدمت: {{ appointment.service.name }}</li>
-    <li>حیوان: {{ appointment.animal.name }}</li>
-    <li>وضعیت: <strong>{{ appointment.get_status_display }}</strong></li>
-    <li>تاریخ پیشنهادی: {{ appointment.preferred_date|jalali }}
-        {% if appointment.preferred_time_note %}({{ appointment.preferred_time_note }}){% endif %}</li>
-    {% if appointment.confirmed_datetime %}
-      <li>زمان تأییدشده: {{ appointment.confirmed_datetime|jalali:"%Y/%m/%d %H:%M" }}</li>
+<section class="section">
+  <div class="wrap" style="max-width:48rem">
+    <nav class="crumbs reveal" aria-label="مسیر">
+      <a href="{% url 'appointments:list' %}">نوبت‌های من</a><span class="sep">/</span>
+      <span>نوبت #{{ appointment.pk|fa_digits }}</span>
+    </nav>
+
+    <div class="head-row reveal">
+      <div>
+        <p class="eyebrow" style="margin-bottom:.4rem">نوبت #{{ appointment.pk|fa_digits }}</p>
+        <h1 class="title" style="margin:0">{{ appointment.service.name }}</h1>
+      </div>
+      {% with appt=appointment %}{% include "partials/appointment_status.html" %}{% endwith %}
+    </div>
+
+    <div class="form-card reveal" data-delay="1" style="max-width:none">
+      <dl class="dl">
+        <dt>خدمت</dt><dd>{{ appointment.service.name }}</dd>
+        <dt>حیوان</dt><dd>{{ appointment.animal.name }}</dd>
+        <dt>تاریخ پیشنهادی</dt>
+        <dd class="num">{{ appointment.preferred_date|jalali }}{% if appointment.preferred_time_note %} <span style="color:var(--muted)">({{ appointment.preferred_time_note }})</span>{% endif %}</dd>
+        {% if appointment.confirmed_datetime %}
+          <dt>زمان تأییدشده</dt><dd class="num">{{ appointment.confirmed_datetime|jalali:"%Y/%m/%d ساعت %H:%M" }}</dd>
+        {% endif %}
+        {% if appointment.vet %}<dt>دامپزشک</dt><dd>{{ appointment.vet }}</dd>{% endif %}
+        {% if appointment.owner_note %}<dt>توضیح شما</dt><dd>{{ appointment.owner_note }}</dd>{% endif %}
+        {% if appointment.staff_note %}<dt>یادداشت کلینیک</dt><dd>{{ appointment.staff_note }}</dd>{% endif %}
+      </dl>
+    </div>
+
+    {% if appointment.is_cancellable %}
+      <form method="post" action="{% url 'appointments:cancel' appointment.pk %}" class="reveal" style="margin-top:1.4rem">
+        {% csrf_token %}
+        <button type="submit" class="btn btn--ghost" style="color:var(--danger);border-color:color-mix(in srgb,var(--danger) 30%,var(--line))">لغو نوبت</button>
+      </form>
     {% endif %}
-    {% if appointment.vet %}<li>دامپزشک: {{ appointment.vet }}</li>{% endif %}
-    {% if appointment.owner_note %}<li>توضیح شما: {{ appointment.owner_note }}</li>{% endif %}
-    {% if appointment.staff_note %}<li>یادداشت کلینیک: {{ appointment.staff_note }}</li>{% endif %}
-  </ul>
-  {% if appointment.is_cancellable %}
-    <form method="post" action="{% url 'appointments:cancel' appointment.pk %}">
-      {% csrf_token %}
-      <button type="submit">لغو نوبت</button>
-    </form>
-  {% endif %}
+  </div>
+</section>
 {% endblock %}

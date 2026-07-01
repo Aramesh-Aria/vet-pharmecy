@@ -58,7 +58,16 @@ class PrescriptionAdmin(admin.ModelAdmin):
     list_display = ("id", "animal", "product", "issued_by", "issued_at", "is_active")
     list_filter = ("is_active", "issued_at")
     search_fields = ("animal__name", "product__name", "animal__owner__phone")
-    autocomplete_fields = ("animal", "product")
+    # `animal` stays autocomplete (owners may have many). `product` is a plain
+    # filtered <select>: a prescription is only valid for a «فقط با نسخه» medication,
+    # so the dropdown must show *only* those — an autocomplete loads its options from
+    # the Product autocomplete endpoint, which ignores this filter and would let staff
+    # pick an ineligible product, then fail validation with a confusing error.
+    autocomplete_fields = ("animal",)
+
+    class Media:
+        # Filters the medication dropdown to the selected pet's category.
+        js = ["js/admin_prescription.js"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("animal", "product")
@@ -72,7 +81,20 @@ class PrescriptionAdmin(admin.ModelAdmin):
         if db_field.name == "product":
             from catalog.models import Product
 
-            kwargs["queryset"] = Product.objects.filter(is_prescription_only=True)
+            from core.widgets import CategoryDataSelect
+
+            qs = Product.objects.filter(is_prescription_only=True).select_related(
+                "animal_category"
+            )
+            kwargs["queryset"] = qs
+            field = super().formfield_for_foreignkey(db_field, request, **kwargs)
+            # Tag each option with its category so the JS can hide non-matching
+            # medications once the pet is chosen. Validation still enforces it.
+            field.widget = CategoryDataSelect(
+                category_by_pk={p.pk: p.animal_category_id for p in qs}
+            )
+            field.widget.choices = field.choices
+            return field
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 

@@ -7,11 +7,11 @@ import datetime
 
 import jdatetime
 from django import template
-from django.utils.formats import number_format
 
 register = template.Library()
 
 _EN_TO_FA = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
+_FA_THOUSANDS = "٬"  # Arabic/Persian thousands separator «٬»
 
 
 @register.filter(name="fa_digits")
@@ -38,11 +38,17 @@ def jalali(value, fmt="%Y/%m/%d"):
 
 @register.filter(name="toman")
 def toman(value):
-    """Format a Rial/Toman amount with thousands separators and Persian digits."""
+    """Format a Rial amount with thousands separators and Persian digits.
+
+    Groups in threes with the Persian thousands separator «٬» (e.g. ۵٬۰۰۰٬۰۰۰),
+    independent of Django's NUMBER_GROUPING setting.
+    """
     if value is None or value == "":
         return ""
     try:
-        formatted = number_format(value, decimal_pos=0, use_l10n=False, force_grouping=True)
+        number = int(round(float(value)))
     except (TypeError, ValueError):
         return value
-    return formatted.translate(_EN_TO_FA)
+    sign = "-" if number < 0 else ""
+    grouped = f"{abs(number):,}".replace(",", _FA_THOUSANDS)
+    return (sign + grouped).translate(_EN_TO_FA)

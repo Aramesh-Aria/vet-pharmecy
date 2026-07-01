@@ -66,10 +66,23 @@ class Vaccination(models.Model):
     )
     vaccine_name = models.CharField(_("نام واکسن"), max_length=150)
     date_given = models.DateField(_("تاریخ تزریق"))
-    next_due = models.DateField(_("تاریخ نوبت بعدی"), null=True, blank=True)
+    next_due = models.DateField(
+        _("تاریخ نوبت بعدی"),
+        null=True,
+        blank=True,
+        help_text=_(
+            "تنها تاریخی که باید وارد کنید. یادآوری پیامکی چند روز پیش از این "
+            "تاریخ به‌صورت خودکار ارسال می‌شود؛ نیازی به تعیین زمان یادآوری نیست."
+        ),
+    )
     notes = models.TextField(_("توضیحات"), blank=True)
-    # Set when a due-date reminder has been sent, so the job doesn't repeat it.
-    reminded_at = models.DateTimeField(_("زمان یادآوری"), null=True, blank=True)
+    # Auto-set by the reminder job when a reminder is sent, so it isn't repeated.
+    reminded_at = models.DateTimeField(
+        _("زمان ارسال یادآوری"),
+        null=True,
+        blank=True,
+        help_text=_("به‌صورت خودکار هنگام ارسال یادآوری ثبت می‌شود."),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

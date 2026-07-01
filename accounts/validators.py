@@ -41,6 +41,22 @@ def validate_phone(value: str) -> None:
     normalize_phone(value)
 
 
+_POSTAL_RE = re.compile(r"^\d{10}$")
+
+
+def normalize_postal_code(value: str) -> str:
+    """Canonicalise an Iranian postal code to 10 ASCII digits, or raise."""
+    digits = _to_ascii_digits(str(value)).strip()
+    digits = re.sub(r"[\s-]", "", digits)
+    if not _POSTAL_RE.match(digits):
+        raise ValidationError("کد پستی باید ۱۰ رقم باشد.")
+    return digits
+
+
+def validate_postal_code(value: str) -> None:
+    normalize_postal_code(value)
+
+
 # Persian (۰-۹) and Arabic-Indic (٠-٩) digits -> ASCII.
 _DIGIT_MAP = {ord(p): str(i) for i, p in enumerate("۰۱۲۳۴۵۶۷۸۹")}
 _DIGIT_MAP.update({ord(a): str(i) for i, a in enumerate("٠١٢٣٤٥٦٧٨٩")})
