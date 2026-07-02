@@ -709,3 +709,26 @@ input[type="tel"], input[type="password"], input[type="email"], select, textarea
   .js .hero__eyebrow, .js .hero__title, .js .hero__lede, .js .hero__actions, .js .hero__stats, .js .hero__media { opacity: 1; animation: none; }
   .js .hero .contour path { stroke-dashoffset: 0; animation: none; }
 }
+
+/* --- Clearer, bolder form validation errors (auth + all forms) --- */
+.field .errorlist {
+  font-weight: 700;
+  font-size: .9rem;
+  line-height: 1.6;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  border-inline-start: 3px solid var(--danger);
+  border-radius: 6px;
+  padding: .45rem .65rem;
+  margin-top: .4rem;
+}
+.field .errorlist li { margin: 0; }
+.field .errorlist li::before { content: "⚠ "; }
+/* Outline the field that failed validation. */
+.field:has(.errorlist) input,
+.field:has(.errorlist) select,
+.field:has(.errorlist) textarea {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 15%, transparent);
+}
+.form__error { font-weight: 700; }

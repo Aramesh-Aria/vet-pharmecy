@@ -64,6 +64,7 @@ def test_profile_rejects_bad_postal_code(owner):
 @pytest.mark.django_db
 def test_registration_redirects_to_profile_completion():
     client = Client()
+    client.get(reverse("accounts:register"))  # seed the captcha challenge
     client.post(
         reverse("accounts:register"),
         {
@@ -71,9 +72,54 @@ def test_registration_redirects_to_profile_completion():
             "full_name": "سارا",
             "password1": "Str0ngPass!9",
             "password2": "Str0ngPass!9",
+            "captcha": str(client.session["captcha_answer"]),
         },
     )
     code = re.search(r"(\d{6})", locmem.outbox[-1][1]).group(1)
     resp = client.post(reverse("accounts:register_verify"), {"code": code})
     assert resp.status_code == 302
     assert resp.url == reverse("accounts:profile")
+
+
+@override_settings(SMS_BACKEND=LOCMEM)
+@pytest.mark.django_db
+def test_registration_rejected_with_wrong_captcha():
+    client = Client()
+    client.get(reverse("accounts:register"))  # a challenge now exists
+    resp = client.post(
+        reverse("accounts:register"),
+        {
+            "phone": "09121113333",
+            "full_name": "نادر",
+            "password1": "Str0ngPass!9",
+            "password2": "Str0ngPass!9",
+            "captcha": "0",  # deliberately wrong
+        },
+    )
+    assert resp.status_code == 200  # re-rendered, not created
+    assert not User.objects.filter(phone="09121113333").exists()
+    assert "کد امنیتی" in resp.content.decode()
+
+
+@pytest.mark.django_db
+def test_login_requires_correct_captcha(owner):
+    owner.set_password("Str0ngPass!9")
+    owner.phone_verified = True
+    owner.save()
+    client = Client()
+    client.get(reverse("accounts:login"))
+
+    # Wrong captcha → not logged in.
+    client.post(reverse("accounts:login"), {
+        "username": owner.phone, "password": "Str0ngPass!9", "captcha": "0",
+    })
+    assert "_auth_user_id" not in client.session
+
+    # Correct captcha → logged in.
+    client.get(reverse("accounts:login"))
+    ok = client.post(reverse("accounts:login"), {
+        "username": owner.phone, "password": "Str0ngPass!9",
+        "captcha": str(client.session["captcha_answer"]),
+    })
+    assert ok.status_code == 302
+    assert "_auth_user_id" in client.session

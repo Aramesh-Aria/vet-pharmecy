@@ -41,6 +41,13 @@ class LoginView(auth_views.LoginView):
     authentication_form = PhoneAuthenticationForm
     redirect_authenticated_user = True
 
+    def get_context_data(self, **kwargs):
+        from .captcha import new_question
+
+        ctx = super().get_context_data(**kwargs)
+        ctx["captcha_question"] = new_question(self.request.session)
+        return ctx
+
 
 class LogoutView(auth_views.LogoutView):
     pass
@@ -79,15 +86,24 @@ class ProfileView(LoginRequiredMixin, View):
 class RegisterView(View):
     template_name = "registration/register.html"
 
+    def _render(self, request, form):
+        from .captcha import new_question
+
+        return render(
+            request,
+            self.template_name,
+            {"form": form, "captcha_question": new_question(request.session)},
+        )
+
     def get(self, request):
         if request.user.is_authenticated:
             return redirect("pages:home")
-        return render(request, self.template_name, {"form": RegistrationForm()})
+        return self._render(request, RegistrationForm(request=request))
 
     def post(self, request):
-        form = RegistrationForm(request.POST)
+        form = RegistrationForm(request.POST, request=request)
         if not form.is_valid():
-            return render(request, self.template_name, {"form": form})
+            return self._render(request, form)
 
         phone = form.cleaned_data["phone"]
         request.session[REG_SESSION_KEY] = {
@@ -99,7 +115,7 @@ class RegisterView(View):
             send_otp(phone, "register")
         except SMSDeliveryError:
             messages.error(request, "ارسال پیامک ناموفق بود. لطفاً دوباره تلاش کنید.")
-            return render(request, self.template_name, {"form": form})
+            return self._render(request, form)
         return redirect("accounts:register_verify")
 
 

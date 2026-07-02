@@ -7,8 +7,28 @@ from django.contrib.auth.forms import (
     UserCreationForm,
 )
 
+from . import captcha
 from .models import OwnerProfile, User
 from .validators import normalize_phone, normalize_postal_code
+
+
+def _captcha_field():
+    return forms.CharField(
+        label="کد امنیتی",
+        widget=forms.TextInput(attrs={"inputmode": "numeric", "autocomplete": "off"}),
+    )
+
+
+class CaptchaValidationMixin:
+    """Validate the ``captcha`` field against the challenge in the session.
+    The form must be given the request (``self.request``)."""
+
+    def clean_captcha(self):
+        value = self.cleaned_data.get("captcha", "")
+        session = getattr(getattr(self, "request", None), "session", None)
+        if session is None or not captcha.check(session, value):
+            raise forms.ValidationError("پاسخ کد امنیتی نادرست است.")
+        return value
 
 
 class ProfileForm(forms.ModelForm):
@@ -38,13 +58,14 @@ class OwnerProfileForm(forms.ModelForm):
         return normalize_postal_code(value) if value else value
 
 
-class PhoneAuthenticationForm(AuthenticationForm):
+class PhoneAuthenticationForm(CaptchaValidationMixin, AuthenticationForm):
     """Login with phone + password. The username field IS the phone."""
 
     username = forms.CharField(
         label="شماره موبایل",
         widget=forms.TextInput(attrs={"autofocus": True, "inputmode": "tel"}),
     )
+    captcha = _captcha_field()
 
     def clean_username(self):
         return normalize_phone(self.cleaned_data["username"])
@@ -79,14 +100,26 @@ class _PasswordPairMixin:
         return p2
 
 
-class RegistrationForm(_PasswordPairMixin, forms.Form):
+class RegistrationForm(CaptchaValidationMixin, _PasswordPairMixin, forms.Form):
     """Collect registration details. The account is created only after the
     phone is verified by OTP (see the register/verify views)."""
 
-    phone = _PhoneField(label="شماره موبایل", max_length=15)
+    phone = _PhoneField(
+        label="شماره موبایل", max_length=15,
+        widget=forms.TextInput(attrs={"inputmode": "tel", "autofocus": True}),
+    )
     full_name = forms.CharField(label="نام و نام خانوادگی", max_length=150)
-    password1 = forms.CharField(label="گذرواژه", widget=forms.PasswordInput)
+    password1 = forms.CharField(
+        label="گذرواژه",
+        widget=forms.PasswordInput,
+        help_text=password_validation.password_validators_help_text_html(),
+    )
     password2 = forms.CharField(label="تکرار گذرواژه", widget=forms.PasswordInput)
+    captcha = _captcha_field()
+
+    def __init__(self, *args, request=None, **kwargs):
+        self.request = request
+        super().__init__(*args, **kwargs)
 
     def clean_phone(self):
         phone = self.cleaned_data["phone"]

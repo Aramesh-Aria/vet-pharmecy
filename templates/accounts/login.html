@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}ورود{% endblock %}
 
 {% block content %}
@@ -10,7 +11,7 @@
       <p class="auth__sub">با شمارهٔ موبایل و گذرواژه وارد شوید.</p>
     </div>
 
-    <form method="post" novalidate class="form">
+    <form method="post" novalidate class="form" data-enter-nav>
       {% csrf_token %}
       {% if form.non_field_errors %}<div class="form__error">{{ form.non_field_errors }}</div>{% endif %}
       <div class="field">
@@ -23,6 +24,11 @@
         {{ form.password }}
         {{ form.password.errors }}
       </div>
+      <div class="field">
+        <label for="{{ form.captcha.id_for_label }}">کد امنیتی — حاصل <strong dir="ltr">{{ captcha_question }}</strong> را وارد کنید</label>
+        {{ form.captcha }}
+        {{ form.captcha.errors }}
+      </div>
       <button type="submit" class="btn btn--primary btn--block">ورود</button>
     </form>
 
@@ -34,3 +40,5 @@
   </div>
 </section>
 {% endblock %}
+
+{% block extra_body %}<script src="{% static 'js/auth_form.js' %}" defer></script>{% endblock %}

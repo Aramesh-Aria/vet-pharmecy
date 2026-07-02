@@ -58,6 +58,7 @@ def test_otp_locks_after_max_attempts():
 @pytest.mark.django_db
 def test_registration_flow_creates_verified_owner():
     client = Client()
+    client.get(reverse("accounts:register"))  # seed the captcha challenge
     resp = client.post(
         reverse("accounts:register"),
         {
@@ -65,6 +66,7 @@ def test_registration_flow_creates_verified_owner():
             "full_name": "علی رضایی",
             "password1": "Str0ngPass!9",
             "password2": "Str0ngPass!9",
+            "captcha": str(client.session["captcha_answer"]),
         },
     )
     assert resp.status_code == 302
