@@ -1,5 +1,6 @@
 /* Self-hosted faces (no CDN — Iran reachability, brief §2).
-   Vazirmatn: UI + body, four weights. Lalezar: display only, used with restraint. */
+   Vazirmatn: UI + body (400/500/700). Lalezar: display only, used with restraint.
+   All subset to Persian + Latin + used symbols (fontTools) to cut weight. */
 
 @font-face {
   font-family: "Vazirmatn";
@@ -19,13 +20,6 @@
   font-family: "Vazirmatn";
   src: url("../fonts/Vazirmatn-Bold.woff2") format("woff2");
   font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Vazirmatn";
-  src: url("../fonts/Vazirmatn-Black.woff2") format("woff2");
-  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }

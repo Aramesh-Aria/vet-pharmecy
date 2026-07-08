@@ -81,7 +81,8 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .section__head { max-width: 44rem; margin-bottom: clamp(1.5rem, 4vw, 2.75rem); }
 .eyebrow {
   font-size: var(--step--1); font-weight: 700; letter-spacing: .14em;
-  color: var(--clay); display: inline-flex; align-items: center; gap: .5rem;
+  color: var(--clay-dark); /* darker clay clears WCAG AA at this small size */
+  display: inline-flex; align-items: center; gap: .5rem;
   margin-bottom: .7rem;
 }
 .eyebrow::before { content: ""; width: 1.6rem; height: 2px; background: currentColor; border-radius: 2px; }
@@ -104,8 +105,9 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   transition: transform .18s var(--ease), background .2s, box-shadow .2s, border-color .2s;
 }
 .btn:active { transform: translateY(1px) scale(.99); }
-.btn--primary { background: var(--clay); color: #FFF8EF; box-shadow: 0 8px 18px -10px var(--clay-dark); }
-.btn--primary:hover { background: var(--clay-dark); color: #FFF8EF; transform: translateY(-2px); }
+/* button uses the darker clay so the label clears WCAG AA (light text on clay) */
+.btn--primary { background: var(--clay-dark); color: #FFF8EF; box-shadow: 0 8px 18px -10px #7d3a1e; }
+.btn--primary:hover { background: #8C4020; color: #FFF8EF; transform: translateY(-2px); }
 .btn--forest { background: var(--forest); color: #F1E9D6; }
 .btn--forest:hover { background: var(--forest-2); color: #fff; transform: translateY(-2px); }
 .btn--ghost { background: transparent; color: var(--forest); border-color: var(--line); }
@@ -177,7 +179,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .hero { position: relative; overflow: hidden; background: var(--bg); isolation: isolate; }
 .hero__inner { max-width: var(--maxw); margin-inline: auto;
   padding: clamp(3rem, 8vw, 6rem) clamp(1rem, 4vw, 2rem) clamp(2rem, 5vw, 3.5rem); }
-.hero__eyebrow { color: var(--clay); }
+.hero__eyebrow { color: var(--clay-dark); }
 .hero__title { font-family: var(--font-display); font-size: var(--step-4);
   color: var(--forest); line-height: 1.05; margin: .2em 0 .35em; max-width: 16ch; }
 .hero__title .accent { color: var(--clay); }

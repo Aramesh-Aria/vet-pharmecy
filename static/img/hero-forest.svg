@@ -1,0 +1,31 @@
+<svg viewBox="0 0 440 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="تصویر جنگل هیرکانی مازندران">
+  <defs>
+    <clipPath id="heroClip"><rect x="0" y="0" width="440" height="360" rx="26"/></clipPath>
+    <linearGradient id="heroSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F7F2E6"/><stop offset="1" stop-color="#E7E5CF"/>
+    </linearGradient>
+  </defs>
+  <g clip-path="url(#heroClip)">
+    <rect width="440" height="360" fill="url(#heroSky)"/>
+    <circle cx="322" cy="96" r="40" fill="#E7B24E"/>
+    <circle cx="322" cy="96" r="40" fill="#D6A23E" opacity=".35"/>
+    <path d="M0 250c70-40 120-30 190-8s160 26 250-14v132H0z" fill="#AEC4A6"/>
+    <path d="M0 276c90-34 150-14 236 6s150 10 204-20v98H0z" fill="#7FA184"/>
+    <g fill="#46735A">
+      <path d="M60 300l16-40 16 40z"/><path d="M64 286l12-30 12 30z"/>
+      <path d="M120 306l20-52 20 52z"/><path d="M126 288l14-36 14 36z"/>
+      <path d="M300 302l18-46 18 46z"/><path d="M362 306l20-50 20 50z"/>
+    </g>
+    <path d="M0 320c80-26 150-10 224 8s150 6 216-16v56H0z" fill="#27492F"/>
+    <g fill="#1E3A2B">
+      <path d="M180 330l22-58 22 58z"/><path d="M188 312l14-38 14 38z"/>
+      <path d="M238 332l18-46 18 46z"/>
+    </g>
+    <g stroke="#46735A" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8">
+      <path d="M96 92c6-7 12-7 18 0 6-7 12-7 18 0"/>
+      <path d="M150 66c5-6 10-6 15 0 5-6 10-6 15 0"/>
+      <path d="M120 120c5-6 10-6 15 0 5-6 10-6 15 0"/>
+    </g>
+  </g>
+  <rect x="1.5" y="1.5" width="437" height="357" rx="25" fill="none" stroke="#DCD3BE" stroke-width="2"/>
+</svg>
