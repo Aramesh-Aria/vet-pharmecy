@@ -9,8 +9,9 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 DATABASES = {
     "default": env.db(
         "DATABASE_URL",
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",  # noqa: F405
+        default=f"sqlite:///{BASE_DIR / 'database/db.sqlite3'}",  # noqa: F405
     )
+
 }
 
 INTERNAL_IPS = ["127.0.0.1"]

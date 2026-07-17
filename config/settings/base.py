@@ -6,7 +6,7 @@ Configuration is read from the environment (12-factor) via django-environ;
 see ``.env.example`` for the full list.
 """
 from pathlib import Path
-
+import os
 import environ
 
 # config/settings/base.py -> repo root is three parents up.
@@ -135,8 +135,8 @@ LOCALE_PATHS = [BASE_DIR / "locale"]
 # --------------------------------------------------------------------------
 # Static & media
 # --------------------------------------------------------------------------
-STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_URL = '/public/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "public", "static")
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
@@ -145,8 +145,8 @@ STORAGES = {
     },
 }
 
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = '/public/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "public", "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
