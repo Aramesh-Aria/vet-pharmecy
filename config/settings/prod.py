@@ -23,12 +23,18 @@ SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 # Trust the site's own HTTPS origin(s) for POST/CSRF (Django 4+). Defaults to the
-# non-local ALLOWED_HOSTS (e.g. https://vet-pharmecy.runflare.run) so forms work
-# out of the box; override with CSRF_TRUSTED_ORIGINS in the environment.
+# non-local ALLOWED_HOSTS so forms work out of the box; a ".runflare.run" host
+# becomes the wildcard origin "https://*.runflare.run". Override with
+# CSRF_TRUSTED_ORIGINS in the environment.
+def _https_origin(host):
+    host = host.strip()
+    return f"https://*{host}" if host.startswith(".") else f"https://{host}"
+
+
 CSRF_TRUSTED_ORIGINS = env.list(
     "CSRF_TRUSTED_ORIGINS",
     default=[
-        f"https://{h}"
+        _https_origin(h)
         for h in ALLOWED_HOSTS
         if h not in ("localhost", "127.0.0.1", "0.0.0.0")
     ],

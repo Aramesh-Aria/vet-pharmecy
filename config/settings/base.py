@@ -15,7 +15,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
     SECRET_KEY=(str, "insecure-dev-key-change-me"),
-    ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1","vet-pharmecy.runflare.run"]),
+    # ".runflare.run" (leading dot) matches any RunFlare subdomain, so the site
+    # works even if the exact host changes. Override with ALLOWED_HOSTS in the env.
+    ALLOWED_HOSTS=(
+        list,
+        ["localhost", "127.0.0.1", "vet-pharmecy.runflare.run", ".runflare.run"],
+    ),
 )
 
 # Load a .env file if present (local dev / single-server deploys).
