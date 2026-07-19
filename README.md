@@ -27,16 +27,35 @@ Dev uses SQLite by default and `config.settings.dev`. Tests: `pytest`.
 ## Production (RunFlare)
 
 Deployed on RunFlare directly from the git repo (no Docker, no Procfile).
-Configure in the RunFlare dashboard:
 
-- **Env vars:** `DJANGO_SETTINGS_MODULE=config.settings.prod`, `SECRET_KEY`,
-  `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, and `DATABASE_URL` (from the attached
-  PostgreSQL service).
-- **Start command:** `gunicorn config.wsgi:application`
-- **Release/build steps:** `python manage.py migrate` and
-  `python manage.py collectstatic --noinput`.
+**Database** — create a **PostgreSQL** service (16.2 recommended; not PostGIS),
+then set `DATABASE_URL=postgres://USER:PASSWORD@<db-service-name>:5432/DBNAME`.
+You cannot attach a disk to a database service — RunFlare's managed Postgres
+handles its own storage.
 
-WhiteNoise serves static files from the app, so no separate web server is needed.
+**Disk** — add one disk at path **`/app/public`** (Disk Management → Add Disk).
+Static and media are served from `/public/` per RunFlare's Django docs:
+`STATIC_ROOT=/app/public/static`, `MEDIA_ROOT=/app/public/media`. The disk keeps
+**uploaded media** across deploys.
+
+**Start command** — because that disk mounts at **runtime**, run migrate +
+collectstatic there (not only at build), so they land on the mounted disk:
+
+```
+python manage.py migrate --noinput && \
+python manage.py collectstatic --noinput && \
+gunicorn config.wsgi:application --bind 0.0.0.0:8000
+```
+
+**Env vars:** `DJANGO_SETTINGS_MODULE=config.settings.prod`, `DEBUG=False`,
+`SECRET_KEY`, `DATABASE_URL`, `ALLOWED_HOSTS` (defaults include
+`vet-pharmecy.runflare.run`). `CSRF_TRUSTED_ORIGINS` defaults to the HTTPS form of
+each host. After the first deploy: create a superuser and run
+`python manage.py seed_data` from the RunFlare console.
+
+Static uses non-manifest storage (stable filenames like `…/css/app.css`) so
+RunFlare serves them by path; WhiteNoise compresses + serves as a fallback. The
+source assets live in `static/`; `public/` is generated (gitignored).
 
 ## Apps (current)
 

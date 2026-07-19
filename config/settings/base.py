@@ -6,7 +6,7 @@ Configuration is read from the environment (12-factor) via django-environ;
 see ``.env.example`` for the full list.
 """
 from pathlib import Path
-import os
+
 import environ
 
 # config/settings/base.py -> repo root is three parents up.
@@ -135,18 +135,24 @@ LOCALE_PATHS = [BASE_DIR / "locale"]
 # --------------------------------------------------------------------------
 # Static & media
 # --------------------------------------------------------------------------
-STATIC_URL = '/public/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "public", "static")
+# RunFlare serves everything under /public/ from the /app/public disk, so both
+# collected static and uploaded media live there (per RunFlare's Django docs).
+STATIC_URL = "/public/static/"
+STATIC_ROOT = BASE_DIR / "public" / "static"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+# Non-manifest storage: filenames stay stable (…/css/app.css), which RunFlare can
+# serve directly by path. Avoids the ManifestStaticFilesStorage requirement of a
+# staticfiles.json (a missing manifest 500s every page). WhiteNoise still
+# compresses and sets good cache headers as a fallback server.
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
-MEDIA_URL = '/public/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, "public", "media")
+MEDIA_URL = "/public/media/"
+MEDIA_ROOT = BASE_DIR / "public" / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

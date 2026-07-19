@@ -1,4 +1,5 @@
-"""Production settings — Iranian VPS, Gunicorn + Nginx + PostgreSQL (PLAN §4)."""
+"""Production settings — RunFlare (Gunicorn + PostgreSQL; static/media on a
+/app/public disk). See README for the deploy steps."""
 from .base import *  # noqa: F401,F403
 from .base import env
 
@@ -21,7 +22,17 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
+# Trust the site's own HTTPS origin(s) for POST/CSRF (Django 4+). Defaults to the
+# non-local ALLOWED_HOSTS (e.g. https://vet-pharmecy.runflare.run) so forms work
+# out of the box; override with CSRF_TRUSTED_ORIGINS in the environment.
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[
+        f"https://{h}"
+        for h in ALLOWED_HOSTS
+        if h not in ("localhost", "127.0.0.1", "0.0.0.0")
+    ],
+)
 
 # Transactional email over SMTP in production (Phase 2 wires the provider).
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

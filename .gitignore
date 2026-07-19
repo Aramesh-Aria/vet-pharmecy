@@ -17,6 +17,10 @@ db.sqlite3-journal
 /media/
 /staticfiles/
 /static_root/
+# RunFlare: collected static + uploaded media live under /public (a disk),
+# and the SQLite fallback lives under /database — both are generated, not source.
+/public/
+/database/
 
 # Environment / secrets
 .env
