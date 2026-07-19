@@ -12,12 +12,17 @@ ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 # PostgreSQL is required in production; no SQLite fallback.
 DATABASES = {"default": env.db("DATABASE_URL")}
 
-# Behind Nginx terminating TLS.
+# TLS is terminated at RunFlare's edge (which serves the site over HTTPS) and the
+# app is reached over HTTP. So Django must NOT force its own HTTP->HTTPS redirect:
+# with the edge always forwarding HTTP, SECURE_SSL_REDIRECT causes an infinite
+# redirect loop ("too many redirects"). Leave it off on RunFlare.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=False)
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=2592000)  # 30 days
+# HSTS is emitted only on requests Django sees as secure; off by default here
+# since the app is reached over HTTP behind the edge (enable via env if wanted).
+SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=0)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
